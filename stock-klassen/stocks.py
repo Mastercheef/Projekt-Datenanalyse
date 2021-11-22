@@ -13,6 +13,7 @@ class Stocks:
         self.stop    = stop
         self.df_stocks  = self.read_and_merge()
         self.df_returns = self.returns()
+        # Hier müssen die Varianzen hin
 
     def read_and_merge(self):
         df_list = []
@@ -30,3 +31,8 @@ class Stocks:
             returns[name + ' Return'] = self.df_stocks[name]['Close'].pct_change()
 
         return returns
+
+
+
+
+
