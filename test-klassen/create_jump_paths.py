@@ -41,15 +41,17 @@ class test_data():
 
     def calc_returns(self):
         returns = pd.DataFrame()
-        returns['Return'] = self.data_df['0'].pct_change()
+        returns['pct'] = self.data_df['0'].pct_change()
+        returns['log_ret'] = np.log(self.data_df['0']) - np.log(self.data_df['0'].shift(1))
         returns = returns.dropna()
-        returns.columns = ['0']
         return returns
 
-    def calc_rv(self):
+    def calc_rv(self, N=2):
         # Muss Überprüft werden !!!!
         rv = pd.DataFrame()
-        rv['RV'] = self.returns['0'].rolling(2).var()
+        rv['RV'] = self.returns['log_ret']**2
+        #rv['RV'] = rv['RV'].expanding(min_periods=1).sum()
+        rv['RV'] = rv['RV'].rolling(window=N).sum()
         rv = rv.dropna()
         return rv
 
