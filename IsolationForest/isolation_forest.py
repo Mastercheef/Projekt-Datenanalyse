@@ -2,8 +2,9 @@ import numpy as np
 from sklearn.ensemble import IsolationForest
 import matplotlib.pyplot as plt
 
+
 class i_f():
-    def __init__(self,data):
+    def __init__(self, data):
         self.data = self.create_model(data)
 
     def create_model(self, data):
@@ -14,17 +15,16 @@ class i_f():
 
         data['scores'] = model.decision_function(data[['0']])
         data['anomaly_score'] = model.predict(data[['0']])
-        data[data['anomaly_score']==-1].head()
+        data[data['anomaly_score'] == -1].head()
 
         return data
 
-
     def plot_if_jumps(self):
-        plt.figure(figsize=(12,10))
+        plt.figure(figsize=(12, 10))
         # data
-        plt.plot(self.data['0'], c= 'blue',label='time-series')
+        plt.plot(self.data['0'], c='blue', label='time-series')
         # anomalies
-        plt.plot(self.data[self.data.anomaly_score<1]['0'],"o",c='red',label='jumps detectet by IF')
+        plt.plot(self.data[self.data.anomaly_score < 1]['0'], "o", c='red', label='jumps detectet by IF')
 
         plt.grid(True)
         plt.xlabel('Days')
@@ -32,9 +32,3 @@ class i_f():
         plt.title('Jump Diffusion Process')
         plt.legend(loc='best')
         plt.show()
-
-
-
-
-
-
