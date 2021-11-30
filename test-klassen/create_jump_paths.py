@@ -32,18 +32,18 @@ class test_data():
         self.jumps_y = self.data[self.jumps_x]
 
     def merton_jump_paths(self):
-        size=(self.steps,self.Npaths)
-        dt = self.T/self.steps
+        size = (self.steps, self.Npaths)
+        dt = self.T / self.steps
         # poisson- distributed jumps
-        jumps = np.random.poisson( self.lam*dt, size=size)
+        jumps = np.random.poisson(self.lam * dt, size=size)
 
         poi_rv = np.multiply(jumps,
-                             np.random.normal(self.m,self.v, size=size)).cumsum(axis=0)
-        geo = np.cumsum(((self.r -  self.sigma**2/2 -self.lam*(self.m  + self.v**2*0.5))*dt +
-                         self.sigma*np.sqrt(dt) *
+                             np.random.normal(self.m, self.v, size=size)).cumsum(axis=0)
+        geo = np.cumsum(((self.r - self.sigma ** 2 / 2 - self.lam * (self.m + self.v ** 2 * 0.5)) * dt +
+                         self.sigma * np.sqrt(dt) *
                          np.random.normal(size=size)), axis=0)
 
-        return np.exp(geo+poi_rv)*self.S, jumps
+        return np.exp(geo + poi_rv) * self.S, jumps
 
     def calc_returns(self):
         returns = pd.DataFrame()
@@ -58,13 +58,13 @@ class test_data():
         :return:
         '''
         rv = pd.DataFrame()
-        rv['RV'] = self.returns['log_ret']**2
-        #rv['RV'] = rv['RV'].expanding(min_periods=1).sum()
+        rv['RV'] = self.returns['log_ret'] ** 2
+        # rv['RV'] = rv['RV'].expanding(min_periods=1).sum()
         rv['RV'] = rv['RV'].rolling(window=N).sum()
         rv = rv.dropna()
         return rv
 
-    def calc_bpv(self,N=2):
+    def calc_bpv(self, N=2):
         bpv = pd.DataFrame()
         bpv['BPV'] = self.returns['log_ret'].abs() * (np.log(self.data_df['0']) - np.log(self.data_df['0'].shift(-1))).abs()
         bpv['BPV'] = bpv['BPV'].rolling(window=N).sum() * (np.pi/2)
@@ -83,12 +83,12 @@ class test_data():
 
 
     def comp_data_df(self):
-        return pd.DataFrame(self.data,columns=['0'])
+        return pd.DataFrame(self.data, columns=['0'])
 
     def plot_path_jumps(self):
-        plt.figure(figsize=(12,10))
-        plt.plot(self.data, c= 'blue',label='time-series')
-        plt.plot(self.jumps_x,self.jumps_y,"o",c='red',label='jumps')
+        plt.figure(figsize=(12, 10))
+        plt.plot(self.data, c='blue', label='time-series')
+        plt.plot(self.jumps_x, self.jumps_y, "o", c='red', label='jumps')
         plt.grid(True)
         plt.xlabel('Days')
         plt.ylabel('Stock Price')
@@ -97,9 +97,9 @@ class test_data():
         plt.show()
 
     def plot_variations(self):
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1,sharex=True)
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, sharex=True)
         fig.suptitle('Merkmale')
-        fig.set_size_inches(12,10)
+        fig.set_size_inches(12, 10)
 
         ax1.plot(self.returns['log_ret'], label='Returns (log)')
         ax2.plot(self.rv, label='Realized variation')
@@ -136,7 +136,6 @@ class test_data():
             'CutOff returns': cutoff_returns,
             'CutOff rv': cutoff_rv
         })
-
 
     def plot_cutoff(self):
         ''' Cut stimmt noch nicht der cut wird später der wert sein. mit dem man den höchsten F1-Score bekommt

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def merton_jump_paths(S, T, r, m, v, lam, steps, Npaths, sigma):
     size = (steps, Npaths)
     dt = T / steps
