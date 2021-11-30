@@ -8,7 +8,7 @@ class i_f():
         self.data = self.create_model(data)
 
     def create_model(self, data):
-        model = IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1), max_features=1.0)
+        model = IsolationForest(n_estimators=100, max_samples=1000, contamination=0.02, max_features=1.0)
         model.fit(data[['0']])
 
         print(model.get_params())
