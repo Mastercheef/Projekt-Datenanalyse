@@ -1,15 +1,15 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from sklearn.ensemble import IsolationForest
-import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score
-
 from MertonJump import merton_jump_paths
+sns.set()
+sns.set_style('darkgrid') # whitegrid
 
-
-def buildMertonDF(S=100, T=1, r=0.02, m=0, v=0.3, lam=5, steps=1000, Npaths=1, sigma=0.2, rollingWindowRV=2):
-    """
-    This function generates
+def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=8, steps=1000, Npaths=1, sigma=0.4, N=2):
+    """ This function generates
     :param rollingWindowRV:
     :param S: current stock price
     :param T: time to maturity
@@ -20,21 +20,37 @@ def buildMertonDF(S=100, T=1, r=0.02, m=0, v=0.3, lam=5, steps=1000, Npaths=1, s
     :param steps: time steps
     :param Npaths: number of paths to simulate
     :param sigma: annaul standard deviation , for weiner process
+    :param N: sum index for RV and BPV
     :return: dataframe with the generated stockprices, and the features
     """
 
     # generate merton data
     mertonData, jumps = merton_jump_paths(S, T, r, m, v, lam, steps, Npaths, sigma)
-
     mertonDf = pd.DataFrame(mertonData, columns=['Merton Jump'])
+    # add jumps
+    jumps_x = list(np.ndarray.nonzero(jumps))[0]
+    jumpsDf = pd.DataFrame(mertonDf.iloc[jumps_x])
+    mertonDf['Jumps'] = 0
+    mertonDf.loc[jumps_x,'Jumps'] = jumpsDf['Merton Jump']
+    # add features
 
-    # mertonDf['Return'] = mertonDf['Merton Jump'].pct_change()
+    # log return
     mertonDf['Return log'] = np.log(mertonDf['Merton Jump']) - np.log(mertonDf['Merton Jump'].shift(1))
+    # Realized variance
+    mertonDf['RV'] = mertonDf['Return log']**2
+    mertonDf['RV'] = mertonDf['RV'].rolling(window=N).sum()
+    # Bipower variance
+    mertonDf['BPV'] = mertonDf['Return log'].abs() * (np.log(mertonDf['Merton Jump']) - np.log(mertonDf['Merton Jump'].shift(-1))).abs()
+    mertonDf['BPV'] = mertonDf['BPV'].rolling(window=N).sum() * (np.pi/2)
+    mertonDf = mertonDf.dropna()
+    # Difference RV - BPV
+    mertonDf['Diff'] = mertonDf['RV'] - mertonDf['BPV']
 
-    mertonDf['Realized variance'] = mertonDf['Return log'].rolling(rollingWindowRV).var()
-    mertonDf = mertonDf.fillna(0)
-    # mertonDf['RSV'] = ....
-    # mertonDf['Diff'] = ...
+
+
+
+    #mertonDf = mertonDf.fillna(0)
+
 
     # cutoff
     # bestF1Returns = bestF1Score(mertonDf['Return'], jumps)
@@ -47,7 +63,7 @@ def buildMertonDF(S=100, T=1, r=0.02, m=0, v=0.3, lam=5, steps=1000, Npaths=1, s
     # mertonDf['Anomaly Diff CutOff'] = bestCutOff(data=mertonDf['Return'], value=0.02)
 
     mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf['Return log'])
-    mertonDf['Anomaly RV IF'] = isolationForest(mertonDf['Realized variance'])
+    mertonDf['Anomaly RV IF'] = isolationForest(mertonDf['RV'])
     # mertonDf['Anomaly RSV IF'] = isolationForest(mertonDF['RSV']
     # mertonDf['Anomaly Diff IF'] = isolationForest(mertonDF['Diff']
 
@@ -112,8 +128,30 @@ def bestF1Score(data, jumps):
     return bestCutOff
 
 
-def plotter(data, plot):
-    pass
+def plotter(df):
+    plot_jumps =df[df['Jumps']>0]
+    # plot Time series with jumps
+    plt.figure(figsize=(12,8))
+    sns.lineplot(data=df['Merton Jump'],legend='auto',label='Time-series')
+    sns.scatterplot(data=plot_jumps['Merton Jump'], label='Jumps',color='red',alpha=1,s=80)
+
+    # plot features
+    fig, axes = plt.subplots(3, 1, figsize=(12, 8))
+    fig.suptitle('Merkmale')
+    fig.subplots_adjust(hspace=0.4, wspace=0.4)
+    sns.lineplot(ax=axes[0],data=df['BPV'],legend='auto',label='Bipower variation')
+    sns.lineplot(ax=axes[1],data=df['RV'],legend='auto',label='Realized variation')
+    sns.lineplot(ax=axes[2],data=df['Diff'],legend='auto',label='Difference')
+
+    plt.show()
 
 
-buildMertonDF()
+
+if __name__ == "__main__":
+
+    df = buildMertonDF()
+
+
+
+
+
