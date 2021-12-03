@@ -30,8 +30,11 @@ def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=8, steps=1000, Npaths=1, s
     # add jumps
     jumps_x = list(np.ndarray.nonzero(jumps))[0]
     jumpsDf = pd.DataFrame(mertonDf.iloc[jumps_x])
-    mertonDf['Jumps'] = 0
-    mertonDf.loc[jumps_x,'Jumps'] = jumpsDf['Merton Jump']
+    mertonDf['Jumps plot'] = 0
+    mertonDf.loc[jumps_x,'Jumps plot'] = jumpsDf['Merton Jump']
+
+    jumps = [-1 if i>0 else 1 for i in mertonDf['Jumps plot'].tolist()]
+    mertonDf['Jumps'] = jumps
     # add features
 
     # log return
@@ -64,8 +67,8 @@ def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=8, steps=1000, Npaths=1, s
 
     mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf['Return log'])
     mertonDf['Anomaly RV IF'] = isolationForest(mertonDf['RV'])
-    # mertonDf['Anomaly RSV IF'] = isolationForest(mertonDF['RSV']
-    # mertonDf['Anomaly Diff IF'] = isolationForest(mertonDF['Diff']
+    #mertonDf['Anomaly RSV IF'] = isolationForest(mertonDf['RSV'])
+    mertonDf['Anomaly Diff IF'] = isolationForest(mertonDf['Diff'])
 
     return mertonDf
 
@@ -129,7 +132,7 @@ def bestF1Score(data, jumps):
 
 
 def plotter(df):
-    plot_jumps =df[df['Jumps']>0]
+    plot_jumps =df[df['Jumps plot']>0]
     # plot Time series with jumps
     plt.figure(figsize=(12,8))
     sns.lineplot(data=df['Merton Jump'],legend='auto',label='Time-series')
@@ -150,7 +153,6 @@ def plotter(df):
 if __name__ == "__main__":
 
     df = buildMertonDF()
-
 
 
 
