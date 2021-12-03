@@ -25,7 +25,7 @@ def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=8, steps=1000, Npaths=1, s
     """
 
     # generate merton data
-    mertonData, jumps = merton_jump_paths(S, T, r, m, v, lam, steps, Npaths, sigma)
+    mertonData, jumps, contamin = merton_jump_paths(S, T, r, m, v, lam, steps, Npaths, sigma)
     mertonDf = pd.DataFrame(mertonData, columns=['Merton Jump'])
     # add jumps
     jumps_x = list(np.ndarray.nonzero(jumps))[0]
@@ -65,10 +65,10 @@ def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=8, steps=1000, Npaths=1, s
     # mertonDf['Anomaly RSV CutOff'] = bestCutOff(data=mertonDf['Return'], value=0.02)
     # mertonDf['Anomaly Diff CutOff'] = bestCutOff(data=mertonDf['Return'], value=0.02)
 
-    mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf['Return log'])
-    mertonDf['Anomaly RV IF'] = isolationForest(mertonDf['RV'])
-    #mertonDf['Anomaly RSV IF'] = isolationForest(mertonDf['RSV'])
-    mertonDf['Anomaly Diff IF'] = isolationForest(mertonDf['Diff'])
+    mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf['Return log'],contamin=contamin)
+    mertonDf['Anomaly RV IF'] = isolationForest(mertonDf['RV'],contamin=contamin)
+    #mertonDf['Anomaly RSV IF'] = isolationForest(mertonDf['RSV'],contamin=contamin)
+    mertonDf['Anomaly Diff IF'] = isolationForest(mertonDf['Diff'],contamin=contamin)
 
     return mertonDf
 
@@ -81,7 +81,8 @@ def subset(data):
     outlier = len(subset[subset['Jumps']==-1])
 
     percent = round(erg/outlier,2)*100
-    print('{} von {} Anomalien wurden erkannt -> {} %'.format(erg, outlier,percent ))
+    contamin = len(subset.loc[subset['Anomaly Diff IF']==-1])
+    print('{} von {} Anomalien wurden erkannt -> {} % IF contamin: {}'.format(erg, outlier,percent, contamin ))
     return percent,subset
 
 
@@ -104,7 +105,7 @@ def cutOff(data, value):
     return cutoff_returns
 
 
-def isolationForest(data):
+def isolationForest(data,contamin):
     """
 
     :param data:
@@ -112,7 +113,7 @@ def isolationForest(data):
     """
     model = IsolationForest(n_estimators=100,
                             max_samples='auto',
-                            contamination=float(0.008),
+                            contamination=contamin,
                             max_features=1.0)
     anomalyIF = model.fit_predict(np.array(data).reshape(len(data), 1))
     return anomalyIF
@@ -148,9 +149,16 @@ def bestF1Score(data, jumps):
 def plotter(df):
     plot_jumps =df[df['Jumps plot']>0]
     # plot Time series with jumps
-    plt.figure(figsize=(12,8))
+    plt.figure(figsize=(18,10))
     sns.lineplot(data=df['Merton Jump'],legend='auto',label='Time-series')
     sns.scatterplot(data=plot_jumps['Merton Jump'], label='Jumps',color='red',alpha=1,s=80)
+
+    subset = df.loc[(df['Anomaly Diff IF']==-1)]
+    subset = subset['Merton Jump']
+
+    sns.scatterplot(data=subset, label='IF Diff',color='green',alpha=1, marker="+",s=120)
+
+
 
     # plot features
     fig, axes = plt.subplots(3, 1, figsize=(12, 8))

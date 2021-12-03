@@ -5,7 +5,9 @@ def merton_jump_paths(S, T, r, m, v, lam, steps, Npaths, sigma):
     size = (steps, Npaths)
     dt = T / steps
     # poisson- distributed jumps
+    contamin = lam * dt
     jumps = np.random.poisson(lam * dt, size=size)
+
 
     poi_rv = np.multiply(jumps,
                          np.random.normal(m, v, size=size)).cumsum(axis=0)
@@ -13,4 +15,4 @@ def merton_jump_paths(S, T, r, m, v, lam, steps, Npaths, sigma):
                      sigma * np.sqrt(dt) *
                      np.random.normal(size=size)), axis=0)
 
-    return np.exp(geo + poi_rv) * S, jumps
+    return np.exp(geo + poi_rv) * S, jumps, contamin
