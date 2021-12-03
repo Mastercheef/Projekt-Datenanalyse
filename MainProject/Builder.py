@@ -72,6 +72,20 @@ def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=8, steps=1000, Npaths=1, s
 
     return mertonDf
 
+def subset(data):
+    subset = data.loc[(data['Jumps']==-1) | (data['Anomaly Diff IF']==-1)]
+    subset=subset[['Jumps', 'Anomaly Diff IF']]
+
+    erg = subset.loc[(subset['Jumps']==-1)&(subset['Jumps']==subset['Anomaly Diff IF'])]
+    erg = erg.count().loc['Jumps']
+    outlier = len(subset[subset['Jumps']==-1])
+
+    percent = round(erg/outlier,2)*100
+    print('{} von {} Anomalien wurden erkannt -> {} %'.format(erg, outlier,percent ))
+    return percent,subset
+
+
+
 
 def cutOff(data, value):
     """
@@ -96,9 +110,9 @@ def isolationForest(data):
     :param data:
     :return:
     """
-    model = IsolationForest(n_estimators=50,
+    model = IsolationForest(n_estimators=100,
                             max_samples='auto',
-                            contamination=float(0.1),
+                            contamination=float(0.008),
                             max_features=1.0)
     anomalyIF = model.fit_predict(np.array(data).reshape(len(data), 1))
     return anomalyIF
