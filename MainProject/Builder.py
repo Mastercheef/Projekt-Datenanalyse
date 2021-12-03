@@ -8,7 +8,7 @@ from MertonJump import merton_jump_paths
 sns.set()
 sns.set_style('darkgrid') # whitegrid
 
-def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=8, steps=1000, Npaths=1, sigma=0.4, N=2):
+def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=200, steps=10000, Npaths=1, sigma=0.4, N=1):
     """ This function generates
     :param rollingWindowRV:
     :param S: current stock price
@@ -43,6 +43,7 @@ def buildMertonDF(S=1.0, T=1, r=0.02, m=0, v=0.1, lam=8, steps=1000, Npaths=1, s
     mertonDf['RV'] = mertonDf['Return log']**2
     mertonDf['RV'] = mertonDf['RV'].rolling(window=N).sum()
     # Bipower variance
+    mertonDf['BPV'] = (np.log(mertonDf['Merton Jump']).shift(-1) - np.log(mertonDf['Merton Jump'])).abs() * mertonDf['Return log'].abs()
     mertonDf['BPV'] = mertonDf['Return log'].abs() * (np.log(mertonDf['Merton Jump']) - np.log(mertonDf['Merton Jump'].shift(-1))).abs()
     mertonDf['BPV'] = mertonDf['BPV'].rolling(window=N).sum() * (np.pi/2)
     mertonDf = mertonDf.dropna()
