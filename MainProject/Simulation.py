@@ -1,28 +1,52 @@
-from sklearn.metrics import f1_score
-import Builder
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
 import time
+import Builder
 
-start = time.time()
+def sim_table(n:int=10):
+    ''' Creates a simulation for six given jump rates.
+    :param n: number of runs per jump rate, per default 10 [int]
+    :return: table with f1 scores per method and feature for the respective jump rate [DataFrame]
+    '''
 
-f1_scores_DiffIF = []
-f1_scores_ReturnsIF = []
-runs = 100
+    jump_steps = [0.0002, 0.001, 0.002, 0.005,0.01, 0.02]
 
-for i in range(runs):
-    data = Builder.buildMertonDF()
-    f1_scores_DiffIF.append(f1_score(data['Jumps'], data['Anomaly Diff IF'], pos_label=-1))
-    f1_scores_ReturnsIF.append(f1_score(data['Jumps'], data['Anomaly Returns IF'], pos_label=-1))
-    if (i % 10) == 0:
-        print(i, "% erreicht")
+    header = [np.array(['Features', 'Returns', 'Returns', 'Diff', 'Diff','RSV','RSV','RSV and Diff','Returns,RSV and Diff']),
+              np.array(['Jumps/steps','CutOff','IF','CutOff','IF','CutOff','IF','IF','IF'])]
+    f1_score = pd.DataFrame(columns=header)
+    f1_score['Features'] = jump_steps
 
-end = time.time()
-print("F1 Scores Mean Diff:", np.mean(f1_scores_DiffIF))
-print("F1 Scores Mean Returns: ", np.mean(f1_scores_ReturnsIF))
-print("Durchläufe:", runs)
-print('Laufzeit: {:5.3f}s'.format(end - start))
+    cutOff_returns,if_returns,cutOff_diff,if_difference,if_rsv_list,cut_rsv_list,rsv_diff_list,r_rsv_diff_list = [],[],[],[],[],[],[],[]
+    returns_cutoff, returns_if, diff_cutoff, diff_if,rsv_cutoff,rsv_if,rsv_diff,r_rsv_diff = [],[],[],[],[],[],[],[]
 
-plt.plot(f1_scores_ReturnsIF, label='Returns')
-plt.plot(f1_scores_DiffIF, label='Diff')
-plt.legend()
+    start = time.time()
+    for rate in jump_steps:
+        for _ in range(0,n,1):
+            data, if_ret, if_diff, cut_ret, cut_diff, if_rsv, cut_rsv, rsv_diff_val,r_rsv_diff_val = Builder.simulation(jump_rate=rate)
+            cutOff_returns.append(cut_ret)
+            if_returns.append(if_ret)
+            cutOff_diff.append(cut_diff)
+            if_difference.append(if_diff)
+            cut_rsv_list.append(cut_rsv)
+            if_rsv_list.append(if_rsv)
+            rsv_diff_list.append(rsv_diff_val)
+            r_rsv_diff_list.append(r_rsv_diff_val)
+
+        returns_cutoff.append(np.round(np.mean(cutOff_returns),2))
+        returns_if.append(np.round(np.mean(if_returns),2))
+        diff_cutoff.append(np.round(np.mean(cutOff_diff),2))
+        diff_if.append(np.round(np.mean(if_difference),2))
+        rsv_cutoff.append(np.round(np.mean(cut_rsv_list),2))
+        rsv_if.append(np.round(np.mean(if_rsv_list),2))
+        rsv_diff.append(np.round(np.mean(rsv_diff_list),2))
+        r_rsv_diff.append(np.round(np.mean(r_rsv_diff_list),2))
+
+    end = time.time()
+    sek = end - start
+    print('running time: {} min, with n={}'.format(round(sek/60,2),n))
+
+    df = pd.DataFrame([jump_steps,returns_cutoff,returns_if,diff_cutoff,diff_if,rsv_cutoff,rsv_if,rsv_diff,r_rsv_diff])
+    df = df.transpose()
+    df.columns = header
+
+    return df

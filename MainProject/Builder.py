@@ -13,20 +13,25 @@ sns.set()
 sns.set_style('darkgrid')  # whitegrid
 
 
-def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None):
+def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.02, m=0, v=0.03, lam=8, Npaths=1, sigma=0.25,N=1):
+    ''' Creates a large data set with all features for the isolatin forest and associated anomaly values as well as the signed jumps.
+    :param jump_rate: lambda/step (i.e. contamination) [float]
+    :param l: lambda, intensity of jump [int]
+    :param step: time steps, per default 10 000 [int]
+    :return: dataset with Merton-jump-data,signed jumps, features, anomalie scores [Dataframe]
+    '''
     # parameter mertion
     steps = 10000 if step == None else step
     lam = jump_rate * steps if l == None else l
     # generate merton data
-    mertonData, jumps, contamin = merton_jump_paths(v=0.05, lam=lam, steps=steps)
-    mertonDf = pd.DataFrame(mertonData, columns=['Merton Jump'])
 
+    mertonData, jumps, contamin = merton_jump_paths(S=S, T=T, r=r, m=m, v=v, lam=lam, steps=steps, Npaths=1, sigma=sigma)
+    mertonDf = pd.DataFrame(mertonData, columns=['Merton Jump'])
     # add jumps
     jumps_x = list(np.ndarray.nonzero(jumps))[0]
     jumpsDf = pd.DataFrame(mertonDf.iloc[jumps_x])
     mertonDf['Jumps plot'] = 0
     mertonDf.loc[jumps_x, 'Jumps plot'] = jumpsDf['Merton Jump']
-
     jumps = [-1 if i > 0 else 1 for i in mertonDf['Jumps plot'].tolist()]
     mertonDf['Jumps'] = jumps
 
@@ -34,7 +39,7 @@ def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None):
     # log return
     mertonDf['Return log'] = np.log(mertonDf['Merton Jump']) - np.log(mertonDf['Merton Jump'].shift(1))
 
-    N = 1  # Summ limit at RV and BPV
+    N = N  # Summ limit at RV and BPV
 
     # Realized variance
     mertonDf['RV'] = mertonDf['Return log'] ** 2
@@ -61,23 +66,22 @@ def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None):
     mertonDf['SJ'] = RV_pos - RV_neg
 
     # Realized semi-variation RSV
-    # Achtung muss ungeding geprüft werden !!
-    mertonDf['RSV'] = RV_pos
+    # realized semi-variation is referred to as signed jumps
+    mertonDf['RSV'] = mertonDf['SJ']
 
     # IF and features
     mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf[['Return log']], contamin=contamin)
     mertonDf['Anomaly RSV IF'] = isolationForest(mertonDf[['RSV']], contamin=contamin)
     mertonDf['Anomaly Diff IF'] = isolationForest(mertonDf[['Diff']], contamin=contamin)
     mertonDf['Amomaly RSV Diff'] = isolationForest(mertonDf[['RSV', 'Diff']], contamin=contamin, max_features=2)
-    mertonDf['Amomaly Returns RSV Diff'] = isolationForest(mertonDf[['Return log', 'RSV', 'Diff']], contamin=contamin,
-                                                           max_features=3)
+    mertonDf['Amomaly Returns RSV Diff'] = isolationForest(mertonDf[['Return log', 'RSV', 'Diff']], contamin=contamin,max_features=3)
 
     return mertonDf
 
 
 def subset(data=None):
-    '''
-    :param data:
+    ''' Prints how many anomalies were detected with Diff and RSV
+    :param data: dataset [DataFrame]
     :return:
     '''
     subset_diff = data.loc[(data['Jumps'] == -1) | (data['Anomaly Diff IF'] == -1)]
@@ -98,14 +102,19 @@ def subset(data=None):
     percent_rsv = round(erg_rsv / outlier, 2) * 100
     contamin = len(subset_diff.loc[subset_diff['Anomaly Diff IF'] == -1])
 
-    print('Diff: {} von {} Anomalien wurden erkannt -> {} % IF contamin: {}'.format(erg_diff, outlier, percent_diff,
+    print('Diff: {} von {} Anomalien wurden erkannt -> {} % IF contamin: {}'.format(erg_diff, outlier, round(percent_diff,2),
                                                                                     contamin))
-    print('RSV : {} von {} Anomalien wurden erkannt -> {} % IF contamin: {}'.format(erg_rsv, outlier, percent_rsv,
+    print('RSV : {} von {} Anomalien wurden erkannt -> {} % IF contamin: {}'.format(erg_rsv, outlier, round(percent_rsv,2),
                                                                                     contamin))
-    return percent_diff, subset_diff
+
 
 
 def cutOff(data=None, label:str=None):
+    ''' This function calculates the cutoff of a given feature.
+    :param data:  dataset  [DataFrame]
+    :param label: feature  [string]
+    :return: best F1-Score [int], CutOff-value [float], all data with a list of marked jumps [DataFrame]
+    '''
     start = max(abs(data[label]))
     n = 100
     steps = np.linspace(start=start, stop=0, num=n)
@@ -130,15 +139,19 @@ def cutOff(data=None, label:str=None):
 
 
 def isolationForest(data: [str], contamin: float, max_features: int = 1):
-    """
-    :param data:
-    :param contamin:
-    :return: a DF of anomaly valus where 1 = normal value and -1 = outlier
+    """ Creates an isolation forest based on the transferred data
+    :param data: dataset [DataFrame]
+    :param contamin: the jump-rate of the dataset [float]
+    :param max_features:
+    :return: dataset of anomaly valus where 1 = inlier and -1 = outlier [DataFrame]
     """
     model = IsolationForest(n_estimators=100,
                             max_samples='auto',
                             contamination=contamin,
-                            max_features=max_features)
+                            max_features=max_features,
+                            bootstrap=False,
+                            n_jobs=1,
+                            random_state=1)
 
     anomalyIF = model.fit_predict(data)
 
@@ -147,14 +160,48 @@ def isolationForest(data: [str], contamin: float, max_features: int = 1):
 
 def f1_score_comp(data=None, label: str = None):
     '''Computes the f1 score of an given DataFrame with positv_label = -1
-    :param data:  dataset
-    :param label: feature name
-    :return: f1 score
+    :param data:  dataset [DataFrame]
+    :param label: feature name [string]
+    :return: f1 score [float]
     '''
     return f1_score(data['Jumps'], data[label], pos_label=-1)
 
+def simulation_test(S=1.0, T=1, r=0.02, m=0, v=0.03, l=8, step=1000, Npaths=1, sigma=0.25,N=1):
+    data = buildMertonDF(S=S, T=T, r=r, m=m, v=v, l=l, step=step, Npaths=Npaths, sigma=sigma,N=N)
+    # IF scores
+    f1_ret_log = f1_score_comp(data, 'Anomaly Returns IF')
+    f1_rsv = f1_score_comp(data, 'Anomaly RSV IF')
+    f1_diff = f1_score_comp(data, 'Anomaly Diff IF')
+    # Cutoff scores
+    cut_f1_ret_log, c1,df1 = cutOff(data, 'Return log')
+    cut_f1_rsv, c2, df2 = cutOff(data, 'RSV')
+    cut_f1_diff, c3, df3 = cutOff(data, 'Diff')
+    # multiple features
+    rsv_diff = f1_score_comp(data, 'Amomaly RSV Diff')
+    ret_rsv_diff = f1_score_comp(data, 'Amomaly Returns RSV Diff')
 
-def simulation(jump_rate, print=False):
+
+    print('IF Return: ', round(f1_ret_log, 3))
+    print('Cutoff Return: ', round(cut_f1_ret_log, 3))
+    print('---------------------')
+    print('IF Diff: ', round(f1_diff, 3))
+    print('Cutoff Diff: ', round(cut_f1_diff, 3))
+    print('---------------------')
+    print('IF RSV: ', round(f1_rsv,3))
+    print('Cutoff RSV: ', round(cut_f1_rsv,3))
+    print('---------------------')
+    print('IF RSV diff: ', round(rsv_diff, 3))
+    print('IF Return RSV diff: ', round(ret_rsv_diff, 3))
+    print('---------------------')
+
+    return data
+
+
+def simulation(jump_rate:float=None):
+    ''' Simulates an analysis run with a random jump diffusion process with a given jump rate.
+    :param jump_rate: contamination [float]
+    :return: dataset [DataFrame], and feature scores [float]
+    '''
     data = buildMertonDF(jump_rate=jump_rate)
     # IF scores
     f1_ret_log = f1_score_comp(data, 'Anomaly Returns IF')
@@ -168,18 +215,14 @@ def simulation(jump_rate, print=False):
     rsv_diff = f1_score_comp(data, 'Amomaly RSV Diff')
     ret_rsv_diff = f1_score_comp(data, 'Amomaly Returns RSV Diff')
 
-    if print:
-        print('F1 return log ', round(f1_ret_log, 3))
-        # print('F1 rv ', round(f1_rvs,3))
-        print('F1 diff ', round(f1_diff, 3))
-        print('Cutoff return log ', round(cut_f1_ret_log, 3))
-        # print('Cutoff RV ', round(cut_f1_rsv,3))
-        print('Cutoff Diff ', round(cut_f1_diff, 3))
-
-    return f1_ret_log, f1_diff, cut_f1_ret_log, cut_f1_diff, f1_rsv, cut_f1_rsv, rsv_diff, ret_rsv_diff
+    return data, f1_ret_log, f1_diff, cut_f1_ret_log, cut_f1_diff, f1_rsv, cut_f1_rsv, rsv_diff, ret_rsv_diff
 
 
-def plot_cut(data, label):
+def plot_cut(data=None, label:str=None):
+    ''' Plots the specified feature as a line plot with an upper and lower cutOff.
+    :param data: dataset [DataFrame]
+    :param label: feature label [string]
+    '''
     f1, cut, cutOff_df = cutOff(data, label)
 
     plt.figure(figsize=(14, 8))
@@ -195,10 +238,13 @@ def plot_cut(data, label):
     plt.show()
 
 
-def plotter(df):
+def plotter(df=None):
+    ''' Graphic example output of a merton-jump-diffusion process with signed anomalies and detected anomalies, as well as the feature output and Cutoff.
+    :param df: datset with features and signed jumps [DataFrame]
+    '''
     plot_jumps = df[df['Jumps plot'] > 0]
     # plot Time series with jumps
-    plt.figure(figsize=(18, 10))
+    plt.figure(figsize=(12, 8))
     sns.lineplot(data=df['Merton Jump'], legend='auto', label='Time-series')
     sns.scatterplot(data=plot_jumps['Merton Jump'], label='Jumps', color='red', alpha=1, s=80)
 
@@ -212,19 +258,19 @@ def plotter(df):
     sns.scatterplot(data=rsv, label='IF RSV', color='orange', alpha=1, marker="v", s=120)
 
     # CutOff Return log
-    cut_f1_ret_log, c1,cut = cutOff(df, 'Return log')
-    cut = cut.loc[(cut['Cutoff Jump']) == -1]
-    cut = cut['Merton Jump']
-    sns.scatterplot(data=cut, label='CutOff Return', color='yellow', alpha=1, marker="v", s=120)
+    #cut_f1_ret_log, c1,cut = cutOff(df, 'Return log')
+    #cut = cut.loc[(cut['Cutoff Jump']) == -1]
+    #cut = cut['Merton Jump']
+    #sns.scatterplot(data=cut, label='CutOff Return', color='yellow', alpha=1, marker="v", s=120)
 
     # Returns log
-    plt.figure(figsize=(14, 8))
+    plt.figure(figsize=(12, 8))
     sns.lineplot(data=df['Return log'], legend='auto', label='Returns (log)')
 
     # plot features
-    fig, axes = plt.subplots(4, 1, figsize=(12, 8))
+    fig, axes = plt.subplots(4, 1, figsize=(9, 12))
     fig.suptitle('Merkmale')
-    fig.subplots_adjust(hspace=0.4, wspace=0.4)
+    fig.subplots_adjust(hspace=0.6, wspace=0.6)
     sns.lineplot(ax=axes[0], data=df['BPV'], legend='auto', label='Bipower variation')
     sns.lineplot(ax=axes[1], data=df['RV'], legend='auto', label='Realized variation')
     sns.lineplot(ax=axes[2], data=df['Diff'], legend='auto', label='Difference')
@@ -233,5 +279,4 @@ def plotter(df):
     plt.show()
 
 
-if __name__ == "__main__":
-    df = buildMertonDF()
+
