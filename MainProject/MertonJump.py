@@ -1,11 +1,26 @@
 import numpy as np
 
 
-def merton_jump_paths(S, T, r, m, v, lam, steps, Npaths, sigma):
+def merton_jump_paths(S=1.0, T=1, r=0.02, m=0, v=0.05, lam=8, steps=1000, Npaths=1, sigma=0.4):
+    '''
+    :param S: current stock price
+    :param T: time to maturity
+    :param r: risk free rate
+    :param m: meean of jump size
+    :param v: standard deviation of jump
+    :param lam:    intensity of jump i.e. number of jumps per annum
+    :param steps:  time steps
+    :param Npaths: number of paths to simulate
+    :param sigma:  annaul standard deviation , for weiner process
+    :return: merton-jump-process, contamination
+    '''
     size = (steps, Npaths)
     dt = T / steps
-    # poisson- distributed jumps
+
+    # jump rate (i.e) contamination parameter for IF
     contamin = lam * dt
+
+    # poisson- distributed jumps
     jumps = np.random.poisson(lam * dt, size=size)
 
 

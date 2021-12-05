@@ -8,16 +8,16 @@ sns.set_style('whitegrid')
 
 
 class test_data():
-    def __init__(self,lam=8):
-        self.S   = 1.0  # current stock price
+    def __init__(self,lam=1):
+        self.S   = 100.0  # current stock price
         self.T   = 1    # time to maturity
         self.r   = 0.02 # risk free rate (0.02)
         self.m   = 0    # meean of jump size
-        self.v   = 0.1  # standard deviation of jump (0.3)
+        self.v   = 0.2  # standard deviation of jump (0.3)
         self.lam = lam  # intensity of jump i.e. number of jumps per annum
         self.steps  = 1000 # time steps
         self.Npaths = 1     # number of paths to simulate
-        self.sigma  = 0.4   # annaul standard deviation , for weiner process(0.2)
+        self.sigma  = 0.3   # annaul standard deviation , for weiner process(0.2)
 
         self.data, self.jumps   = self.merton_jump_paths()
         self.data_df = self.comp_data_df()
