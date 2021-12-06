@@ -19,9 +19,11 @@ def merton_jump_paths(S=1.0, T=1, r=0.02, m=0, v=0.03, lam=8, steps=1000, Npaths
 
     # jump rate (i.e) contamination parameter for IF
     contamin = lam * dt
-
+    #contamin = len(jumps[jumps>0]) /steps
     # poisson- distributed jumps
     jumps = np.random.poisson(lam * dt, size=size)
+    
+
 
     poi_rv = np.multiply(jumps,
                          np.random.normal(m, v, size=size)).cumsum(axis=0)
