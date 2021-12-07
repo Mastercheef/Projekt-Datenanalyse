@@ -13,7 +13,7 @@ sns.set()
 sns.set_style('darkgrid')  # whitegrid
 
 
-def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.02, m=0, v=0.035, lam=8, Npaths=1, sigma=0.35,N=1):
+def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.02, m=0, v=0.06, lam=8, Npaths=1, sigma=0.3,N=1):
     ''' Creates a large data set with all features for the isolatin forest and associated anomaly values as well as the signed jumps.
     :param jump_rate: lambda/step (i.e. contamination) [float]
     :param l: lambda, intensity of jump [int]
@@ -258,24 +258,24 @@ def plotter(df=None):
     '''
     plot_jumps = df[df['Jumps plot'] > 0]
     # plot Time series with jumps
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(14, 12))
     sns.lineplot(data=df['Merton Jump'], legend='auto', label='Time-series')
     sns.scatterplot(data=plot_jumps['Merton Jump'], label='Jumps', color='red', alpha=1, s=80)
 
-    # Diff IF points
+    # IF Diff anomalies
     diff = df.loc[(df['Anomaly Diff IF'] == 1)]
     diff = diff['Merton Jump']
-    sns.scatterplot(data=diff, label='IF Diff', color='green', alpha=1, marker="+", s=120)
+    sns.scatterplot(data=diff, label='IF Diff', color='green', alpha=.6, marker="v", s=110)
     # RSV IF points
     rsv = df.loc[(df['Anomaly RSV IF'] == 1)]
     rsv = rsv['Merton Jump']
     #sns.scatterplot(data=rsv, label='IF RSV', color='orange', alpha=1, marker="v", s=120)
 
-    # CutOff Return log
-    cut_f1_ret_log, c1,cut = cutOff(df, 'Return log')
+    # CutOff Diff anomalies
+    cut_f1_ret_log, c1,cut = cutOff(df, 'Diff')
     cut = cut.loc[(cut['Cutoff Jump']) == 1]
     cut = cut['Merton Jump']
-    sns.scatterplot(data=cut, label='CutOff Return', color='yellow', alpha=1, marker="v", s=120)
+    sns.scatterplot(data=cut, label='Diff', color='yellow', alpha=0.6, marker="v", s=90)
 
     # Returns log
     plt.figure(figsize=(12, 8))
