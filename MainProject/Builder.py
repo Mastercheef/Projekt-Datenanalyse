@@ -70,11 +70,11 @@ def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=
     mertonDf['RSV'] = mertonDf['SJ']
 
     # IF and features
-    mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf[['Return log']], contamin=contamin)
-    mertonDf['Anomaly RSV IF'] = isolationForest(mertonDf[['RSV']], contamin=contamin)
-    mertonDf['Anomaly Diff IF'] = isolationForest(mertonDf[['Diff']], contamin=contamin)
-    mertonDf['Amomaly RSV Diff'] = isolationForest(mertonDf[['RSV', 'Diff']], contamin=contamin, max_features=2)
-    mertonDf['Amomaly Returns RSV Diff'] = isolationForest(mertonDf[['Return log', 'RSV', 'Diff']], contamin=contamin,max_features=3)
+    #mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf[['Return log']], contamin=contamin)
+    #mertonDf['Anomaly RSV IF'] = isolationForest(mertonDf[['RSV']], contamin=contamin)
+    #mertonDf['Anomaly Diff IF'] = isolationForest(mertonDf[['Diff']], contamin=contamin)
+    #mertonDf['Amomaly RSV Diff'] = isolationForest(mertonDf[['RSV', 'Diff']], contamin=contamin, max_features=2)
+    #mertonDf['Amomaly Returns RSV Diff'] = isolationForest(mertonDf[['Return log', 'RSV', 'Diff']], contamin=contamin,max_features=3)
 
     return mertonDf
 

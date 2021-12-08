@@ -28,11 +28,11 @@ hallo = pd.DataFrame()
 start = time.time()
 for conta in jump_steps:
     print('step: ', conta)
-    data = Builder.buildMertonDF(jump_rate=conta)
     for _ in range(0,5):
+        data = Builder.buildMertonDF(jump_rate=conta)
         max = 0
         wert_i = 0
-        for i in range(2,150):
+        for i in range(2,120):
             hallo['Diff'] = optimierer(data = data[['Diff']],contamin=conta,i=i)
             f1 = f1_score(data['Jumps'], hallo['Diff'])
             if f1> max:
