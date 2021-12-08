@@ -13,7 +13,7 @@ sns.set()
 sns.set_style('darkgrid')  # whitegrid
 
 
-def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.02, m=0, v=0.06, lam=8, Npaths=1, sigma=0.3,N=1):
+def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.02, m=0, v=0.035, lam=8, Npaths=1, sigma=0.35,N=1):
     ''' Creates a large data set with all features for the isolatin forest and associated anomaly values as well as the signed jumps.
     :param jump_rate: lambda/step (i.e. contamination) [float]
     :param l: lambda, intensity of jump [int]
@@ -133,6 +133,7 @@ def cutOff(data=None, label:str=None):
     cutOff_df = data['Merton Jump']
     cutOff_ret = data
     data_list = data[label].values
+
     for step in steps:
         cutoff_jump = [1 if i > step or i < (step*(-1)) else 0 for i in data_list]
         df_tmp['Cutoff Jump'] = cutoff_jump
@@ -154,8 +155,8 @@ def isolationForest(data: [str], contamin: float, max_features: int = 1):
     :return: dataset of anomaly valus where 0 = inlier and 1 = outlier [DataFrame]
     """
 
-    model = IsolationForest(n_estimators=100,
-                            max_samples='auto',
+    model = IsolationForest(n_estimators=150,
+                            max_samples=55,
                             contamination=contamin,
                             max_features=max_features,
                             bootstrap=False,
@@ -175,7 +176,7 @@ def f1_score_comp(data=None, label: str = None):
     '''
     return f1_score(data['Jumps'], data[label])
 
-def simulation_test(S=1.0, T=1, r=0.02, m=0, v=0.03, l=8, step=1000, Npaths=1, sigma=0.25,N=1):
+def simulation_test(S=1.0, T=1, r=0.02, m=0, v=0.021, l=8, step=1000, Npaths=1, sigma=0.35,N=1):
     data = buildMertonDF(S=S, T=T, r=r, m=m, v=v, l=l, step=step, Npaths=Npaths, sigma=sigma,N=N)
     # IF scores
     f1_ret_log = f1_score_comp(data, 'Anomaly Returns IF')
