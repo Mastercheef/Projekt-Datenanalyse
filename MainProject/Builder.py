@@ -39,13 +39,13 @@ def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=
     # add features
     # log return
     mertonDf['Return log'] = np.log(mertonDf['Merton Jump']) - np.log(mertonDf['Merton Jump'].shift(1))
-
+    mertonDf = mertonDf.fillna(0)
     N = N  # Summ limit at RV and BPV
 
     # Realized variance
     mertonDf['RV'] = mertonDf['Return log'] ** 2
     mertonDf['RV'] = mertonDf['RV'].rolling(window=N).sum()
-    mertonDf = mertonDf.dropna()
+    mertonDf = mertonDf.fillna(0)
     # Bipower variance
     mertonDf['BPV'] = (np.log(mertonDf['Merton Jump']).shift(-1) - np.log(mertonDf['Merton Jump'])).abs() * mertonDf['Return log'].abs()
     mertonDf['BPV'] = mertonDf['Return log'].abs() * (np.log(mertonDf['Merton Jump']) - np.log(mertonDf['Merton Jump'].shift(-1))).abs()

@@ -1,8 +1,10 @@
 from Builder import simulation_test,subset, plotter, plot_cut
+import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import f1_score
 import Builder
 import time
+import sys
 
 def optimierer(data: [str], contamin: float, i=0):
     model = IsolationForest(n_estimators=100,
@@ -21,15 +23,18 @@ def optimierer(data: [str], contamin: float, i=0):
 jump_steps = [0.0002, 0.001, 0.002, 0.005,0.01, 0.02]
 opti = []
 
+
+hallo = pd.DataFrame()
 start = time.time()
 for conta in jump_steps:
+    print('step: ', conta)
     data = Builder.buildMertonDF(jump_rate=conta)
-    for _ in range(0,10):
+    for _ in range(0,5):
         max = 0
         wert_i = 0
-        for i in range(2,200):
-            hallo = optimierer(data = data[['Diff']],contamin=conta,i=i)
-            f1 = f1_score(data['Jumps'], hallo)
+        for i in range(2,150):
+            hallo['Diff'] = optimierer(data = data[['Diff']],contamin=conta,i=i)
+            f1 = f1_score(data['Jumps'], hallo['Diff'])
             if f1> max:
                 max = f1
                 wert_i = i
