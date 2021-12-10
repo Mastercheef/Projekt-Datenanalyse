@@ -13,7 +13,7 @@ sns.set()
 sns.set_style('darkgrid')  # whitegrid
 
 
-def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.02, m=0, v=0.035, lam=8, Npaths=1, sigma=0.35,N=1):
+def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.01, m=0, v=0.055, lam=8, Npaths=1, sigma=0.45,N=1):
     ''' Creates a large data set with all features for the isolatin forest and associated anomaly values as well as the signed jumps.
     :param jump_rate: lambda/step (i.e. contamination) [float]
     :param l: lambda, intensity of jump [int]
@@ -47,8 +47,8 @@ def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=
     mertonDf['RV'] = mertonDf['RV'].rolling(window=N).sum()
     mertonDf = mertonDf.fillna(0)
     # Bipower variance
-    mertonDf['BPV'] = (np.log(mertonDf['Merton Jump']).shift(-1) - np.log(mertonDf['Merton Jump'])).abs() * mertonDf['Return log'].abs()
-    mertonDf['BPV'] = mertonDf['Return log'].abs() * (np.log(mertonDf['Merton Jump']) - np.log(mertonDf['Merton Jump'].shift(-1))).abs()
+    mertonDf['BPV'] = (np.log(mertonDf['Merton Jump']).shift(-1) - np.log(mertonDf['Merton Jump'])).abs() * (np.log(mertonDf['Merton Jump']) - np.log(mertonDf['Merton Jump'].shift(1))).abs()
+
     mertonDf['BPV'] = mertonDf['BPV'].rolling(window=N).sum() * (np.pi / 2)
     mertonDf = mertonDf.fillna(0)
     # Difference RV - BPV
@@ -70,51 +70,31 @@ def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=
     mertonDf['RSV'] = mertonDf['SJ']
 
     # IF and features
-    #mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf[['Return log']], contamin=contamin)
-    #mertonDf['Anomaly RSV IF'] = isolationForest(mertonDf[['RSV']], contamin=contamin)
-    #mertonDf['Anomaly Diff IF'] = isolationForest(mertonDf[['Diff']], contamin=contamin)
-    #mertonDf['Amomaly RSV Diff'] = isolationForest(mertonDf[['RSV', 'Diff']], contamin=contamin, max_features=2)
-    #mertonDf['Amomaly Returns RSV Diff'] = isolationForest(mertonDf[['Return log', 'RSV', 'Diff']], contamin=contamin,max_features=3)
+    mertonDf['Anomaly merton'] = isolationForest(mertonDf[['Merton Jump']], contamin=contamin)
+    mertonDf['Anomaly Returns IF'] = isolationForest(mertonDf[['Return log']], contamin=contamin)
+    mertonDf['Anomaly RSV IF'] = isolationForest(mertonDf[['RSV']], contamin=contamin)
+    mertonDf['Anomaly Diff IF'] = isolationForest(mertonDf[['Diff']], contamin=contamin)
+    mertonDf['Amomaly RSV Diff'] = isolationForest(mertonDf[['RSV', 'Diff']], contamin=contamin, max_features=2)
+    mertonDf['Amomaly Returns RSV Diff'] = isolationForest(mertonDf[['Return log', 'RSV', 'Diff']], contamin=contamin,max_features=3)
 
     return mertonDf
 
 
-def subset(data=None):
+def detected_anomalies(data=None):
     ''' Prints how many anomalies were detected with Diff and RSV.
     :param data: dataset [DataFrame]
     :return:
     '''
-    subset_diff = data.loc[(data['Jumps'] == 1) | (data['Anomaly Diff IF'] == 1)]
-    subset_cut_diff = data.loc[(data['Jumps'] == 1) | (data['CutOff Diff'] == 1)]
-    subset_rsv = data.loc[(data['Jumps'] == 1) | (data['Anomaly RSV IF'] == 1)]
-    subset_diff = subset_diff[['Jumps', 'Anomaly Diff IF']]
-    subset_cut_diff = subset_cut_diff[['Jumps', 'CutOff Diff']]
-    subset_rsv = subset_rsv[['Jumps', 'Anomaly RSV IF']]
+    for label in data.columns[9:].tolist():
+        subset =  data.loc[(data['Jumps'] == 1) | (data[label] == 1)]
+        erg_sub = subset.loc[(subset['Jumps'] == 1) & (subset['Jumps'] == subset[label])]
+        erg_sub = erg_sub.count().loc['Jumps']
 
-    erg_diff = subset_diff.loc[(subset_diff['Jumps'] == 1) & (subset_diff['Jumps'] == subset_diff['Anomaly Diff IF'])]
-    erg_cut_diff = subset_cut_diff.loc[(subset_cut_diff['Jumps'] == 1) & (subset_cut_diff['Jumps'] == subset_cut_diff['CutOff Diff'])]
-    erg_rsv = subset_rsv.loc[(subset_rsv['Jumps'] == 1) & (subset_rsv['Jumps'] == subset_rsv['Anomaly RSV IF'])]
-
-    erg_diff = erg_diff.count().loc['Jumps']
-    erg_cut_diff = erg_cut_diff.count().loc['Jumps']
-    erg_rsv = erg_rsv.count().loc['Jumps']
-
-    outlier = len(subset_diff[subset_diff['Jumps'] == 1])
-
-    percent_diff = round(erg_diff / outlier, 2) * 100
-    percent_cut_diff = round(erg_cut_diff / outlier, 2) * 100
-    percent_rsv = round(erg_rsv / outlier, 2) * 100
-
-    contamin = len(subset_diff.loc[subset_diff['Anomaly Diff IF'] == 1])
-    contamin_cut_diff = len(subset_cut_diff.loc[subset_cut_diff['CutOff Diff'] ==1])
-    outlier_count = data[['Jumps','Anomaly Returns IF','CutOff Return', 'CutOff RSV', 'CutOff Diff']]
-    print(outlier_count[outlier_count>0].count())
-    print('-----------------------------')
-
-    print('CutOF with Diff: {} of {} anomalies were recognized ->  {} %'.format(erg_cut_diff, outlier, round(percent_cut_diff,2)))
-    print('Diff: {} of {} anomalies were recognized -> {} %'.format(erg_diff, outlier, round(percent_diff,2)))
-    print('RSV : {} of {} anomalies were recognized -> {} %'.format(erg_rsv, outlier, round(percent_rsv,2)))
-    print('-----------------------------')
+        outlier = len(subset[subset['Jumps'] == 1])
+        loc_outlier = len(subset[subset[label]==1])
+        pct = round(erg_sub / outlier, 2) * 100
+        print(label+': {} of {} anomalies ({} %) in total: {}'.format(erg_sub, outlier, round(pct,2),loc_outlier))
+        print('-----------------------------')
 
 
 def cutOff(data=None, label:str=None):
@@ -155,13 +135,14 @@ def isolationForest(data: [str], contamin: float, max_features: int = 1):
     :return: dataset of anomaly valus where 0 = inlier and 1 = outlier [DataFrame]
     """
 
-    model = IsolationForest(n_estimators=150,
-                            max_samples=55,
+    model = IsolationForest(n_estimators=100,
+                            max_samples=0.25,
                             contamination=contamin,
                             max_features=max_features,
-                            bootstrap=False,
-                            n_jobs=1,
-                            random_state=1)
+                            random_state=11)
+                            #bootstrap=False,
+                            #n_jobs=1,
+
     list  = model.fit_predict(data)
     ret = [1 if (i == -1) else 0 for i in list]
 
@@ -176,7 +157,8 @@ def f1_score_comp(data=None, label: str = None):
     '''
     return f1_score(data['Jumps'], data[label])
 
-def simulation_test(S=1.0, T=1, r=0.02, m=0, v=0.021, l=8, step=1000, Npaths=1, sigma=0.35,N=1):
+
+def simulation_test(S=1.0, T=1, r=0.02, m=0, v=0.021, l=8, step=1000, Npaths=1, sigma=0.35,N=1,print_f1=False):
     data = buildMertonDF(S=S, T=T, r=r, m=m, v=v, l=l, step=step, Npaths=Npaths, sigma=sigma,N=N)
     # IF scores
     f1_ret_log = f1_score_comp(data, 'Anomaly Returns IF')
@@ -193,21 +175,21 @@ def simulation_test(S=1.0, T=1, r=0.02, m=0, v=0.021, l=8, step=1000, Npaths=1, 
     data['CutOff Return'] = df1['Cutoff Jump']
     data['CutOff RSV'] = df2['Cutoff Jump']
     data['CutOff Diff'] = df3['Cutoff Jump']
+    detected_anomalies(data)
 
-    subset(data)
-
-    print('IF Return: ', round(f1_ret_log, 3))
-    print('Cutoff Return: ', round(cut_f1_ret_log, 3))
-    print('---------------------')
-    print('IF Diff: ', round(f1_diff, 3))
-    print('Cutoff Diff: ', round(cut_f1_diff, 3))
-    print('---------------------')
-    print('IF RSV: ', round(f1_rsv,3))
-    print('Cutoff RSV: ', round(cut_f1_rsv,3))
-    print('---------------------')
-    print('IF RSV diff: ', round(rsv_diff, 3))
-    print('IF Return RSV diff: ', round(ret_rsv_diff, 3))
-    print('---------------------')
+    if print_f1:
+        print('IF Return: ', round(f1_ret_log, 3))
+        print('Cutoff Return: ', round(cut_f1_ret_log, 3))
+        print('---------------------')
+        print('IF Diff: ', round(f1_diff, 3))
+        print('Cutoff Diff: ', round(cut_f1_diff, 3))
+        print('---------------------')
+        print('IF RSV: ', round(f1_rsv,3))
+        print('Cutoff RSV: ', round(cut_f1_rsv,3))
+        print('---------------------')
+        print('IF RSV diff: ', round(rsv_diff, 3))
+        print('IF Return RSV diff: ', round(ret_rsv_diff, 3))
+        print('---------------------')
 
     return data
 
