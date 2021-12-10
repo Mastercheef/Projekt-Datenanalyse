@@ -84,3 +84,41 @@ def subset(data=None):
     print('Diff: {} of {} anomalies were recognized -> {} %'.format(erg_diff, outlier, round(percent_diff,2)))
     print('RSV : {} of {} anomalies were recognized -> {} %'.format(erg_rsv, outlier, round(percent_rsv,2)))
     print('-----------------------------')
+
+
+
+
+    def returns(self):
+        returns = pd.DataFrame()
+    for name in self.names:
+        returns[name + ' Return'] = self.df_stocks[name]['Close'].pct_change()
+    returns = returns.fillna(0)
+    return returns
+
+def log_returns(self):
+    log_returns = pd.DataFrame()
+    for name in self.names:
+        log_returns[name + ' log Return'] = np.log(self.df_stocks[name]['Close']) - np.log(self.df_stocks[name]['Close'].shift(1))
+    log_returns = log_returns.fillna(0)
+    return log_returns
+
+def rv(self,N=1):
+    rv = pd.DataFrame()
+    for name in self.names:
+        rv[name + ' RV'] = self.df_log_returns[name + ' log Return'] ** 2
+        rv[name + ' RV'] = rv[name + ' RV'].rolling(window=N).sum()
+        rv = rv.fillna(0)
+    return rv
+
+
+def bpv(self,N=1):
+    bpv = pd.DataFrame()
+    for name in self.names:
+        bpv[name +' BPV'] = (np.log(self.df_stocks[name]['Close']).shift(-1) - np.log(self.df_stocks[name]['Close'])).abs() * self.df_returns[name+' Return log'].abs()
+        bpv[name +' BPV'] = bpv[name +' BPV'].rolling(window=N).sum() * (np.pi / 2)
+    bpv = bpv.fillna(0)
+    return bpv
+
+
+def diff(self):
+    return  self.df_rv - self.df_bpv
