@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.ensemble import IsolationForest
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score
 from MertonJump import merton_jump_paths
 from pandas.core.common import SettingWithCopyWarning
@@ -13,7 +15,7 @@ sns.set()
 sns.set_style('darkgrid')  # whitegrid
 
 
-def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.01, m=0, v=0.055, lam=8, Npaths=1, sigma=0.45,N=1):
+def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None,S=1.0, T=1, r=0.02, m=0, v=0.045, lam=8, Npaths=1, sigma=0.35,N=1):
     ''' Creates a large data set with all features for the isolatin forest and associated anomaly values as well as the signed jumps.
     :param jump_rate: lambda/step (i.e. contamination) [float]
     :param l: lambda, intensity of jump [int]
@@ -136,7 +138,7 @@ def isolationForest(data: [str], contamin: float, max_features: int = 1):
     """
 
     model = IsolationForest(n_estimators=100,
-                            max_samples=0.25,
+                            max_samples=0.5,  # 0.25
                             contamination=contamin,
                             max_features=max_features,
                             random_state=11)
@@ -214,6 +216,19 @@ def simulation(jump_rate:float=None):
 
     return data, f1_ret_log, f1_diff, cut_f1_ret_log, cut_f1_diff, f1_rsv, cut_f1_rsv, rsv_diff, ret_rsv_diff
 
+def class_report(data=None, label:str=None):
+    ''' This funciton calculates a class report of a given anomaly score.
+    :param data:  dataset [DataFrame]
+    :param label: anomalie score of an given feature  [string]
+    :return: Classificaiton report as console output
+    '''
+    print(classification_report(data['Jumps'], data[label], target_names=['normal','outlier']))
+
+
+def calc_confusion_matrix(data, label):
+    cm = confusion_matrix(data['Jumps'], data[label])
+    return cm
+
 
 def plot_cut(data=None, label:str=None):
     ''' Plots the specified feature as a line plot with an upper and lower cutOff.
@@ -235,30 +250,60 @@ def plot_cut(data=None, label:str=None):
     plt.show()
 
 
+def plot_confusion_matrix(cm=None):
+    '''
+    :param cm:
+    :return:
+    '''
+    cm_perc = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
+    cf_matrix = cm
+    group_names = ['TN','FP','FN','TP']
+    group_counts = ['{0:0.0f}'.format(value) for value in cf_matrix.flatten()]
+    #group_percentages = ['{0:.2%}'.format(value) for value in cf_matrix.flatten()/np.sum(cf_matrix)]
+    labels = [f'{v1}\n{v2}' for v1, v2 in zip(group_names,group_counts)]
+    labels = np.asarray(labels).reshape(2,2)
+
+    ax = plt.subplot()
+    sns.heatmap(cf_matrix, annot=labels,fmt='') #, cmap='magma'
+    ax.set_xlabel('Predicted lables')
+    ax.set_ylabel('True lables')
+    ax.set_title('Confusion Matrix ')
+    ax.xaxis.set_ticklabels(['normal', 'anomaly']); ax.yaxis.set_ticklabels(['normal','anomaly'])
+    plt.show()
+
+    ax = plt.subplot()
+    sns.heatmap(cm_perc, annot=True,fmt='.2%', cmap='Blues' )
+    ax.set_xlabel('Predicted lables')
+    ax.set_ylabel('True lables')
+    ax.set_title('Confusion Matrix normalize')
+    ax.xaxis.set_ticklabels(['normal', 'anomaly']); ax.yaxis.set_ticklabels(['normal','anomaly'])
+    plt.show()
+
+
 def plotter(df=None):
     ''' Graphic example output of a merton-jump-diffusion process with signed anomalies and detected anomalies, as well as the feature output and Cutoff.
     :param df: datset with features and signed jumps [DataFrame]
     '''
     plot_jumps = df[df['Jumps plot'] > 0]
     # plot Time series with jumps
-    plt.figure(figsize=(14, 12))
+    plt.figure(figsize=(12, 10))
     sns.lineplot(data=df['Merton Jump'], legend='auto', label='Time-series')
     sns.scatterplot(data=plot_jumps['Merton Jump'], label='Jumps', color='red', alpha=1, s=80)
 
     # IF Diff anomalies
     diff = df.loc[(df['Anomaly Diff IF'] == 1)]
     diff = diff['Merton Jump']
-    sns.scatterplot(data=diff, label='IF Diff', color='green', alpha=.6, marker="v", s=110)
+    #sns.scatterplot(data=diff, label='IF Diff', color='orange', alpha=.6, marker="v", s=110)
+
     # RSV IF points
     rsv = df.loc[(df['Anomaly RSV IF'] == 1)]
     rsv = rsv['Merton Jump']
-    #sns.scatterplot(data=rsv, label='IF RSV', color='orange', alpha=1, marker="v", s=120)
+    sns.scatterplot(data=rsv, label='IF RSV', color='green', alpha=1, marker="v", s=120)
 
-    # CutOff Diff anomalies
-    cut_f1_ret_log, c1,cut = cutOff(df, 'Diff')
-    cut = cut.loc[(cut['Cutoff Jump']) == 1]
+    # CutOff RSV anomalies
+    cut = df.loc[(df['CutOff RSV']) == 1]
     cut = cut['Merton Jump']
-    sns.scatterplot(data=cut, label='Diff', color='yellow', alpha=0.6, marker="v", s=90)
+    sns.scatterplot(data=cut, label='CutOff RSV', color='orange', alpha=0.9, marker="x", s=100)
 
     # Returns log
     plt.figure(figsize=(12, 8))
