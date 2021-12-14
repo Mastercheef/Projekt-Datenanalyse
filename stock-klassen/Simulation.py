@@ -34,6 +34,6 @@ def stock_simulaiton():
     print('running time: {} min'.format(round(sek/60,2)))
     table = pd.DataFrame(data = [conta_list,mean_a,mean_c])
     table = table.transpose()
-    table.columns = ['Contamination', 'Anomaly Score', 'Ramdom Score']
+    table.columns = ['Contamination', 'Anomaly Score', 'Random Score']
 
     return table
