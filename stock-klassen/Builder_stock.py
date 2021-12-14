@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import f1_score
-from pandas.core.common import SettingWithCopyWarning
 
+from pandas.core.common import SettingWithCopyWarning
 warnings.simplefilter(action='ignore', category=SettingWithCopyWarning)
 
 
@@ -51,7 +51,7 @@ def build_stock(stockDf, N=5,contamin=0.02,tage_pred:int=90):
     return stockDf
 
 
-def isolationForest(data: [str], contamin: float, max_features: int = 1):
+def isolationForest(data:[str], contamin:float, max_features:int=1):
     """ Creates an isolation forest based on the transferred data
     :param data: dataset [DataFrame]
     :param contamin: the jump-rate of the dataset [float]
@@ -60,10 +60,9 @@ def isolationForest(data: [str], contamin: float, max_features: int = 1):
     """
 
     model = IsolationForest(n_estimators=100,
-                            max_samples=0.25,
+                            max_samples=0.5,
                             contamination=contamin,
-                            max_features=max_features,
-                            random_state=11)
+                            max_features=max_features)
 
     list  = model.fit_predict(data)
     ret = [1 if (i == -1) else 0 for i in list]
@@ -71,7 +70,30 @@ def isolationForest(data: [str], contamin: float, max_features: int = 1):
     return ret
 
 
+def acc_score(data=None):
+    from sklearn.metrics import accuracy_score
 
+    #print('Distribution Predictions: ', data['Prediction'].value_counts())
 
+    pred = pd.DataFrame()
+    pred['Prediction'] = data[(data['Anomaly Returns IF']==1)&((data['Anomaly RSV IF']==1)|(data['Anomaly Diff IF']==1))]['Prediction']
+    list = pred.value_counts().to_list()
 
+    len_pred = sum(list)
+    #print(list)
+
+    hit = list[0]
+    fail = None
+    if len(list)==2:
+        fail    = list[1]
+
+    compare = data.sample(n=len_pred)
+    compare['Compare'] = 1
+    acc_score_comp = accuracy_score(compare['Compare'], compare['Prediction'], normalize= True)*100
+
+    pred = data[(data['Anomaly Returns IF']==1)&((data['Anomaly RSV IF']==1)|(data['Anomaly Diff IF']==1))]
+    acc_score = accuracy_score(pred['Anomaly Returns IF'], pred['Prediction'], normalize= True)*100
+    # print("Correct prediction in %: ", acc_score)
+
+    return round(acc_score,2), round(acc_score_comp,2)
 

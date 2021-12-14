@@ -138,12 +138,10 @@ def isolationForest(data: [str], contamin: float, max_features: int = 1):
     """
 
     model = IsolationForest(n_estimators=100,
-                            max_samples=0.5,  # 0.25
+                            max_samples=0.5,  # 0.25-0.5
                             contamination=contamin,
-                            max_features=max_features,
-                            random_state=11)
-                            #bootstrap=False,
-                            #n_jobs=1,
+                            max_features=max_features)
+
 
     list  = model.fit_predict(data)
     ret = [1 if (i == -1) else 0 for i in list]
