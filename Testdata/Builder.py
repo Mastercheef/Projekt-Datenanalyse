@@ -12,7 +12,7 @@ from pandas.core.common import SettingWithCopyWarning
 
 warnings.simplefilter(action='ignore', category=SettingWithCopyWarning)
 sns.set()
-sns.set_style('darkgrid')  # whitegrid
+sns.set_style('darkgrid')
 
 
 def buildMertonDF(jump_rate: float = None, l: int = None, step: int = None, S=1.0, T=1, r=0.02, m=0, v=0.045, lam=8,

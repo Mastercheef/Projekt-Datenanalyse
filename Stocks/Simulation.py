@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 import time
-from stocks import *
+from StocksLoader import *
 from plot_stocks import *
-from Builder_stock import acc_score, build_stock
-from Plotter_stock import *
+from BuilderStock import acc_score, build_stock
+from PlotterStock import *
 
 def stock_simulaiton():
     branchen = ['EOAN.DE','RWE.DE','ALV.DE','MUV2.DE','DBK.DE','CBK.DE','NWT.F','AFX.DE','PFE.F','SIX2.DE','DTE.DE','SOBA.F','VODI.DE','TNE5.F','SIE.DE','IFX.DE',
