@@ -2,8 +2,6 @@ import warnings
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
-from sklearn.metrics import f1_score
-
 from pandas.core.common import SettingWithCopyWarning
 warnings.simplefilter(action='ignore', category=SettingWithCopyWarning)
 
@@ -70,22 +68,16 @@ def isolationForest(data:[str], contamin:float, max_features:int=1):
     return ret
 
 
-def acc_score(data=None):
+def acc_score(data=None, label=None):
     from sklearn.metrics import accuracy_score
-
-    #print('Distribution Predictions: ', data['Prediction'].value_counts())
 
     pred = pd.DataFrame()
     pred['Prediction'] = data[(data['Anomaly Returns IF']==1)&((data['Anomaly RSV IF']==1)|(data['Anomaly Diff IF']==1))]['Prediction']
     list = pred.value_counts().to_list()
-
     len_pred = sum(list)
-    #print(list)
-
     hit = list[0]
-    fail = None
-    if len(list)==2:
-        fail    = list[1]
+    fail = 0
+    if len(list)==2: fail = list[1]
 
     compare = data.sample(n=len_pred)
     compare['Compare'] = 1
@@ -93,7 +85,11 @@ def acc_score(data=None):
 
     pred = data[(data['Anomaly Returns IF']==1)&((data['Anomaly RSV IF']==1)|(data['Anomaly Diff IF']==1))]
     acc_score = accuracy_score(pred['Anomaly Returns IF'], pred['Prediction'], normalize= True)*100
-    # print("Correct prediction in %: ", acc_score)
 
+    if label!= None:
+        print('Treffer: ',hit, 'Fehler:',fail)
+        print(label,'Anomalie:',round(acc_score,2),'%')
+        print(label,'Zufällig:',round(acc_score_comp,2),'%')
+        print('------------------------')
     return round(acc_score,2), round(acc_score_comp,2)
 

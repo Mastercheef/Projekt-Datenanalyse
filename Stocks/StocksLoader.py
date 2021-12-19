@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import pandas_datareader as web
 import yfinance as yf
-from datetime import datetime
-import cufflinks as cf
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -16,7 +14,6 @@ class Stocks:
         self.start = start
         self.stop = stop
         self.df_stocks = self.read_and_merge()
-        # Muss geprüft werden!!!
         self.stocks =self.df_stocks
 
 

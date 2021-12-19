@@ -1,23 +1,31 @@
 import seaborn as sns
-import pandas as pd
-sns.set()
-sns.set_style('darkgrid')  # whitegrid
 import matplotlib.pyplot as plt
+import pandas as pd
+sns.set_style('darkgrid')
+
+
 
 def plot_signed_anomalie(df=None,label:str=None):
+    """
+    :param df:
+    :param label:
+    :return:
+    """
     neu = pd.DataFrame()
-    neu['Anomalie'] = df[ (df['Anomaly Returns IF']==1)&((df['Anomaly RSV IF']==1)|(df['Anomaly Diff IF']==1))]['Close']
+    neu['Anomalie'] = df[(df['Anomaly Returns IF']==1)&((df['Anomaly RSV IF']==1)|(df['Anomaly Diff IF']==1))]['Close']
 
     plt.figure(figsize=(10, 8))
     sns.lineplot(data=df['Close'], legend='auto', label=label)
-    sns.scatterplot(data=neu['Anomalie'], label='signed anomaly', color='red', alpha=.6, s=110)
+    sns.scatterplot(data=neu['Anomalie'], label='Signed anomaly', color='red', alpha=.6, s=110)
+    plt.savefig('../../Pictures/Stockdata/AdjustetAnomalies_Stockdata.png')
 
 def plotter(df=None,label:str=None,features=False):
-    ''' Graphic example output of a merton-jump-diffusion process with signed anomalies and detected anomalies, as well as the feature output and Cutoff.
+    """ Graphic example output of a merton-jump-diffusion process with signed anomalies and detected anomalies, as well as the feature output and Cutoff.
     :param df: datset with features and signed jumps [DataFrame]
-    '''
+    """
 
     plt.figure(figsize=(10, 8))
+    plt.title(label)
     sns.lineplot(data=df['Close'], legend='auto', label=label)
 
     # IF Return anomalies points
@@ -35,13 +43,14 @@ def plotter(df=None,label:str=None,features=False):
     rsv_rsv = rsv['SJ']
     rsv = rsv['Close']
     sns.scatterplot(data=rsv, label='IF RSV', color='orange', alpha=1, marker="v", s=70)
+    plt.savefig('../../Pictures/Stockdata/ChartAnomalies_Stockdata.png')
 
     if features:
         # Return log
         plt.figure(figsize=(10, 6))
         sns.lineplot(data=df['Return log'], legend='auto', label='Returns (log)')
         sns.scatterplot(data=ret_return, legend= 'auto',label='IF Return', color='red', s=110)
-
+        plt.savefig('../../Pictures/Stockdata/Return_Stockdata.png')
         rsv_diff = df.loc[(df['Amomaly RSV Diff'] == 1)]
         rsv_diff = rsv_diff['SJ']
         # plot features
@@ -56,6 +65,6 @@ def plotter(df=None,label:str=None,features=False):
         sns.scatterplot(ax=axes[2],data=rsv_rsv,color='red', legend= 'auto', label='Anomaly')
         sns.lineplot(ax=axes[3], data=df['SJ'], legend='auto', label='RSV and Diff')
         sns.scatterplot(ax=axes[3],data=rsv_diff,color='red', legend= 'auto', label='Anomaly')
-
+        plt.savefig('../../Pictures/Stockdata/Features_Stockdata.png')
 
     plt.show()

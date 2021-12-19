@@ -1,13 +1,16 @@
+import Testdata.Builder as Builder
+
+import time
 import numpy as np
 import pandas as pd
-import time
-import Builder
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 def sim_table(n:int=10):
-    ''' Creates a simulation for six given jump rates.
+    """ Creates a simulation for six given jump rates.
     :param n: number of runs per jump rate, per default 10 [int]
     :return: table with f1 scores per method and feature for the respective jump rate [DataFrame]
-    '''
+    """
 
     jump_steps = [0.0002, 0.001, 0.002, 0.005,0.01, 0.02]
 
@@ -50,3 +53,10 @@ def sim_table(n:int=10):
     df.columns = header
 
     return df
+
+
+def table_heatmap(df=None):
+    fig = plt.figure(facecolor='w', edgecolor='k')
+    sns.heatmap(df, annot=True, cmap='viridis', cbar=False)
+    plt.savefig('../../Pictures/Testdata/F1_scores_Project.png')
+    plt.show()

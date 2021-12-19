@@ -1,13 +1,15 @@
+from Testdata.MertonJump import merton_jump_paths
+
 import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score
-from MertonJump import merton_jump_paths
 from pandas.core.common import SettingWithCopyWarning
 
 warnings.simplefilter(action='ignore', category=SettingWithCopyWarning)
@@ -15,8 +17,7 @@ sns.set()
 sns.set_style('darkgrid')
 
 
-def buildMertonDF(jump_rate: float = None, l: int = None, step: int = None, S=1.0, T=1, r=0.02, m=0, v=0.045, lam=8,
-                  Npaths=1, sigma=0.35, N=1):
+def buildMertonDF(jump_rate:float=None, l:int=None, step:int=None, v=0.0395, lam=8, sigma=0.25, N=1):
     """
     Creates a large data set with all features for the isolatin forest and associated
     anomaly values as well as the signed jumps.
@@ -31,8 +32,7 @@ def buildMertonDF(jump_rate: float = None, l: int = None, step: int = None, S=1.
     lam = jump_rate * steps if l == None else l
 
     # generate merton data
-    mertonData, jumps, contamin = merton_jump_paths(S=S, T=T, r=r, m=m, v=v, lam=lam, steps=steps, Npaths=1,
-                                                    sigma=sigma)
+    mertonData, jumps, contamin = merton_jump_paths(v=v, lam=lam, steps=steps, sigma=sigma)
     mertonDf = pd.DataFrame(mertonData, columns=['Merton Jump'])
 
     # add jumps
@@ -162,7 +162,7 @@ def isolationForest(data: [str], contamination: float, max_features: int = 1):
 
 def f1_score_comp(data=None, label: str = None):
     """
-    Computes the f1 score of an given DataFrame with positve_label = -1
+    Computes the f1 score of an given DataFrame with positve_label = 1
     :param data:  dataset [DataFrame]
     :param label: feature name [string]
     :return: f1 score [float]
@@ -170,12 +170,12 @@ def f1_score_comp(data=None, label: str = None):
     return f1_score(data['Jumps'], data[label])
 
 
-def simulation_test(S=1.0, T=1, r=0.02, m=0, v=0.021, l=8, step=1000, Npaths=1, sigma=0.35, N=1, print_f1=False):
+def simulation_test(v=0.021, l=8, step=1000, Npaths=1, sigma=0.35, N=1, print_f1=False):
     """
     Simulates F1-Scores for merton jump diffusion build data.
     :return: dataframe with F1-Score anomaly scores
     """
-    data = buildMertonDF(S=S, T=T, r=r, m=m, v=v, l=l, step=step, Npaths=Npaths, sigma=sigma, N=N)
+    data = buildMertonDF(v=v, l=l, step=step, sigma=sigma, N=N)
     # IF scores
     f1_ret_log = f1_score_comp(data, 'Anomaly Returns IF')
     f1_rsv = f1_score_comp(data, 'Anomaly RSV IF')
@@ -271,6 +271,7 @@ def plot_cut(data=None, label: str = None):
 
     sns.lineplot(data=cut_df['Cut'], color='red', label='CutOff')
     sns.lineplot(data=cut_min_df['Cut'], color='red')
+    plt.savefig('../../Pictures/Testdata/CutOff_Testdata.png')
     plt.show()
 
 
@@ -304,6 +305,7 @@ def plot_confusion_matrix(cm=None):
     ax.set_title('Confusion Matrix normalize')
     ax.xaxis.set_ticklabels(['normal', 'anomaly']);
     ax.yaxis.set_ticklabels(['normal', 'anomaly'])
+    plt.savefig('../../Pictures/Testdata/ConfusionMatrix_Testdata.png')
     plt.show()
 
 
@@ -316,7 +318,9 @@ def plotter(df=None):
     plot_jumps = df[df['Jumps plot'] > 0]
     # plot Time series with jumps
     plt.figure(figsize=(12, 10))
-    sns.lineplot(data=df['Merton Jump'], legend='auto', label='Time-series')
+    m = sns.lineplot(data=df['Merton Jump'], legend='auto', label='Time-series')
+    m.set_xlabel("Step")
+    m.set_ylabel("Value")
     sns.scatterplot(data=plot_jumps['Merton Jump'], label='Jumps', color='red', alpha=1, s=80)
 
     # IF Diff anomalies
@@ -333,18 +337,22 @@ def plotter(df=None):
     cut = df.loc[(df['CutOff RSV']) == 1]
     cut = cut['Merton Jump']
     sns.scatterplot(data=cut, label='CutOff RSV', color='orange', alpha=0.9, marker="x", s=100)
+    plt.savefig('../../Pictures/Testdata/MarkedJumps_Testdata.png')
 
     # Returns log
     plt.figure(figsize=(12, 8))
-    sns.lineplot(data=df['Return log'], legend='auto', label='Returns (log)')
+    r = sns.lineplot(data=df['Return log'], legend='auto', label='Returns (log)')
+    r.set_xlabel("Step")
+    r.set_ylabel("Return")
+    plt.savefig('../../Pictures/Testdata/Returns_Testdata.png')
 
     # plot features
     fig, axes = plt.subplots(4, 1, figsize=(9, 12))
     fig.suptitle('Merkmale')
-    fig.subplots_adjust(hspace=0.6, wspace=0.6)
+    fig.subplots_adjust(hspace=0.4, wspace=0.4)
     sns.lineplot(ax=axes[0], data=df['BPV'], legend='auto', label='Bipower variation')
     sns.lineplot(ax=axes[1], data=df['RV'], legend='auto', label='Realized variation')
     sns.lineplot(ax=axes[2], data=df['Diff'], legend='auto', label='Difference')
     sns.lineplot(ax=axes[3], data=df['SJ'], legend='auto', label='Signed jumps')
-
+    plt.savefig('../../Pictures/Testdata/Features_Testdata.png')
     plt.show()
