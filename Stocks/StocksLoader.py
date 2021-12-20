@@ -14,10 +14,13 @@ class Stocks:
         self.start = start
         self.stop = stop
         self.df_stocks = self.read_and_merge()
-        self.stocks =self.df_stocks
+        self.stocks = self.df_stocks
 
-
-    def read_and_merge(self):
+    def read_and_merge(self) -> pd.DataFrame:
+        """
+        This function
+        :return:
+        """
         df_list = []
         for wkn in self.wkns:
             stock = yf.Ticker(wkn)
@@ -28,17 +31,29 @@ class Stocks:
         return stocks
 
     def plot_stocks_plt(self):
+        """
+        This function plots the stocks that self contains
+        """
         for name in self.stocks.names:
-            self.stocks.df_stocks[name]['Close'].plot(figsize=(16,10),label=name)
+            self.stocks.df_stocks[name]['Close'].plot(figsize=(16, 10), label=name)
         plt.grid(True)
         plt.legend()
         plt.show()
 
     def plot_stocks_df(self):
-        self.stocks.df_stocks.xs(key='Close',axis=1,level='Stock Info').iplot()
+        """
+
+        """
+        self.stocks.df_stocks.xs(key='Close', axis=1, level='Stock Info').iplot()
 
     def clustermap(self):
-        sns.clustermap(self.stocks.df_stocks.xs(key='Close',axis=1,level='Stock Info').corr(),annot=True)
+        """
+        This function plots a clustermap with the given stocks of self
+        """
+        sns.clustermap(self.stocks.df_stocks.xs(key='Close', axis=1, level='Stock Info').corr(), annot=True)
 
     def heatmap(self):
-        sns.heatmap(self.stocks.df_stocks.xs(key='Close',axis=1,level='Stock Info').corr(),annot=True)
+        """
+        This function plots a heatmap of self and the given stocks
+        """
+        sns.heatmap(self.stocks.df_stocks.xs(key='Close', axis=1, level='Stock Info').corr(), annot=True)
