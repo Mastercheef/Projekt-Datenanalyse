@@ -8,7 +8,7 @@ import seaborn as sns
 
 
 class Stocks:
-    def __init__(self, wkns: [] = None, names: [] = None, start=None, stop=None):
+    def __init__(self, wkns:[]=None, names:[]=None, start=None, stop=None):
         self.wkns = wkns
         self.names = names
         self.start = start

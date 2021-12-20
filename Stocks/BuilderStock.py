@@ -84,7 +84,7 @@ def isolationForest(data: [str], contamin: float, max_features: int = 1) -> [int
     """
 
     model = IsolationForest(n_estimators=100,
-                            max_samples=0.5,
+                            max_samples=0.25,
                             contamination=contamin,
                             max_features=max_features)
 

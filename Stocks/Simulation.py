@@ -1,12 +1,10 @@
 import pandas as pd
 import numpy as np
 import time
-from StocksLoader import *
-from BuilderStock import acc_score, build_stock
-from PlotterStock import *
+from Stocks.StocksLoader import *
+from Stocks.BuilderStock import acc_score, build_stock
 
-
-def stock_simulation(labels: [str] = None, predict: int = 90) -> pd.DataFrame:
+def stock_simulation(labels: [str] = None, predict: int = 90)->pd.DataFrame:
     """
     This function runs a simulation of stocks for different contaminations of the isolation forest.
     :param labels: wkn's of the wanted Stocks
@@ -18,7 +16,6 @@ def stock_simulation(labels: [str] = None, predict: int = 90) -> pd.DataFrame:
     stocks = stocks.df_stocks.dropna()
 
     conta_list = [0.005, 0.008, 0.015, 0.09, 0.25]
-    # conta_list_two = [0.002,0.005,0.008,0.010,0.015,0.02]
 
     a_score, c_score, mean_a, mean_c = [], [], [], []
     start = time.time()

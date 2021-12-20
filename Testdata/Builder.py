@@ -170,7 +170,7 @@ def f1_score_comp(data=None, label: str = None):
     return f1_score(data['Jumps'], data[label])
 
 
-def simulation_test(v=0.021, l=8, step=1000, Npaths=1, sigma=0.35, N=1, print_f1=False):
+def simulation_test(v=0.021, l=8, step=1000, sigma=0.35, N=1, print_f1=False):
     """
     Simulates F1-Scores for merton jump diffusion build data.
     :return: dataframe with F1-Score anomaly scores
@@ -255,7 +255,7 @@ def calc_confusion_matrix(data, label):
 
 def plot_cut(data=None, label: str = None):
     """
-    Plots the specified feature as a line plot with an upper and lower cutOff.
+    Plots the specified feature as a line plot with an upper and lower CutOff.
     :param data: dataset [DataFrame]
     :param label: feature label [string]
     """
@@ -278,19 +278,18 @@ def plot_cut(data=None, label: str = None):
 def plot_confusion_matrix(cm=None):
     """
     Plots the confusion matrix.
-    :param cm:
+    :param cm: confusion_matrix
     :return:
     """
     cm_perc = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     cf_matrix = cm
     group_names = ['TN', 'FP', 'FN', 'TP']
     group_counts = ['{0:0.0f}'.format(value) for value in cf_matrix.flatten()]
-    # group_percentages = ['{0:.2%}'.format(value) for value in cf_matrix.flatten()/np.sum(cf_matrix)]
     labels = [f'{v1}\n{v2}' for v1, v2 in zip(group_names, group_counts)]
     labels = np.asarray(labels).reshape(2, 2)
 
     ax = plt.subplot()
-    sns.heatmap(cf_matrix, annot=labels, fmt='')  # , cmap='magma'
+    sns.heatmap(cf_matrix, annot=labels, fmt='')
     ax.set_xlabel('Predicted lables')
     ax.set_ylabel('True lables')
     ax.set_title('Confusion Matrix ')

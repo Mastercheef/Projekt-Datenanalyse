@@ -1,4 +1,16 @@
-# Projekt zur Datenanalyse
+# Data Analysis Project (H-BRS)
+___
+
+### <center> Anomaly Detection in Financial Market Data
+####  <center>  using Isolation Forest and Features
+___
+
+&nbsp;
+
+**Authors:** &nbsp;Erik Autenrieth, Pierre Zimmermann &nbsp;
+
+**Date:** &nbsp;&nbsp;&nbsp;&nbsp;  20.12.2021
+___
 
 ## Table of contents
 * [General info](#general-info)
@@ -34,4 +46,4 @@ To test the performance of these two algorithms, the F1-Score of each will be co
 In the next step, the Isolation Forest and cutoff method will be applied to real financial data obtained through the Yahoo Finance API.
 
 ## Result
-It was possible to generate data that follows a merton jump diffusion process. The features could be extracted and the Isolation Forest and cutoff method could be applied to the features to detect anomalies. The F1-Score, of the Isolation Forest in the original master thesis could be reproduced, but the resulting cutoff F1-Score was higher than in the original master thesis. 
+It was possible to generate data that follows a Merton jump diffusion process. The features could be extracted and the Isolation Forest and cutoff method could be applied to the features to detect anomalies. The F1-Score, of the Isolation Forest in the original master thesis could be reproduced, but the resulting CutOff F1-Score was higher than in the original master thesis. 
