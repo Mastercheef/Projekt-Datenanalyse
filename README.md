@@ -1,4 +1,4 @@
-# Projekt-Datenanalyse
+# Projekt zur Datenanalyse
 
 ## Table of contents
 * [General info](#general-info)
