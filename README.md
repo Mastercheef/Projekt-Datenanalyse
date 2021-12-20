@@ -18,6 +18,7 @@ Project created with:
 The test data will be generated with the help of a Merton jump diffusion model. This process consists of a Brownian motion and Poisson distributed jumps. 
 Then the features return, realized variance, realized bipower variation, difference, signed jumps will be extracted. 
 
+###extracted features
 ![alt text](https://github.com/Mastercheef/Projekt-Datenanalyse-/blob/main/Pictures/Testdata/Features_Testdata.png)
 
 
