@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 sns.set_style('darkgrid')
 
-
-
 def plot_signed_anomalie(df=None,label:str=None):
     """
     :param df:

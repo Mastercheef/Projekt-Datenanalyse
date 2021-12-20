@@ -24,9 +24,9 @@ Then the features return, realized variance, realized bipower variation, differe
 ![alt text](https://github.com/Mastercheef/Projekt-Datenanalyse-/blob/main/Pictures/Testdata/Features_Testdata.png)
 
 
-The Isolation Forest and cutoff method will then search for jumps in these features. 
+The Isolation Forest and CutOff method will then search for jumps in these features. 
 
-### Isolation Forest and cutoff detecting on data
+### Isolation Forest and CutOff detecting on data
 
 ![alt text](https://github.com/Mastercheef/Projekt-Datenanalyse-/blob/main/Pictures/Testdata/MarkedJumps_Testdata.png)
 

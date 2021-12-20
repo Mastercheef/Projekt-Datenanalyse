@@ -17,7 +17,7 @@ def build_stock(stockDf, N=5,contamin=0.02,tage_pred:int=90):
     stockDf = stockDf.fillna(0)
     # Bipower variance
     stockDf['BPV'] = (np.log(stockDf['Close']).shift(-1) - np.log(stockDf['Close'])).abs() * (np.log(stockDf['Close']) - np.log(stockDf['Close'].shift(1))).abs()
-    stockDf['BPV'] = stockDf['BPV'].rolling(window=N).sum() * (np.pi / 2)
+    stockDf['BPV'] = stockDf['BPV'].rolling(window=N).sum() * (np.pi/2)
     stockDf = stockDf.fillna(0)
     # Difference RV - BPV
     stockDf['Diff'] = stockDf['RV'] - stockDf['BPV']
