@@ -7,8 +7,7 @@
 
 ## General info
 This project was built during the module "Projekt zur Datenanalyse". 
-The goal of the project was to build a system that recognizes jumps in jump diffusion data such as stock market data. The Isolation Forest and cutoff algorithms are used to detect jumps. 
-It consists of Python scripts with helper functions and the main jupyter notebooks that run the different simulations and anomaly recognition.  
+The goal of the project was to build a system that recognizes jumps in jump diffusion data such as stock market data. The Isolation Forest and cutoff algorithms are used to detect jumps. The basis for this approach is the master thesis by Carl Paulin. In the first part of this project we wanted to reproduce the results of this master thesis.  
 	
 ## Technologies
 Project created with:
