@@ -10,6 +10,7 @@ def plot_signed_anomaly(df: pd.DataFrame = None, label: str = None):
     This method plots the signed anomalies from a given DataFrame
     :param df: data to plot
     :param label:
+    :return:
     """
     data = pd.DataFrame()
     data['Anomalie'] = \

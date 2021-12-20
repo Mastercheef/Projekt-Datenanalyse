@@ -125,3 +125,4 @@ def acc_score(data=None, label=None) -> (float, float):
         print(label, 'Zufällig:', round(acc_score_comp, 2), '%')
         print('------------------------')
     return round(acc_score, 2), round(acc_score_comp, 2)
+
