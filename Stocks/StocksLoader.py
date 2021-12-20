@@ -42,7 +42,7 @@ class Stocks:
 
     def plot_stocks_df(self):
         """
-
+        This function plots the closing prices
         """
         self.stocks.df_stocks.xs(key='Close', axis=1, level='Stock Info').iplot()
 
