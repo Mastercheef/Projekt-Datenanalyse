@@ -4,6 +4,7 @@
 * [General info](#general-info)
 * [Technologies](#technologies)
 * [Setup](#setup)
+* [Result](#result)
 
 ## General info
 This project was built during the module "Projekt zur Datenanalyse". 
@@ -31,3 +32,6 @@ The Isolation Forest and cutoff method will then search for jumps in these featu
 
 To test the performance of these two algorithms, the F1-Score of each will be compared.
 In the next step, the Isolation Forest and cutoff method will be applied to real financial data obtained through the Yahoo Finance API.
+
+## Result
+It was possible to generate data that follows a merton jump diffusion process. The features could be extracted and the Isolation Forest and cutoff method could be applied to the features to detect anomalies. The F1-Score, of the Isolation Forest in the original master thesis could be reproduced, but the resulting cutoff F1-Score was higher than in the original master thesis. 
