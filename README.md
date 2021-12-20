@@ -1,7 +1,5 @@
 # Projekt-Datenanalyse
 
-# Projekt-Datenanalyse
-
 ## Table of contents
 * [General info](#general-info)
 * [Technologies](#technologies)
