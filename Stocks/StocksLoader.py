@@ -18,8 +18,8 @@ class Stocks:
 
     def read_and_merge(self) -> pd.DataFrame:
         """
-        This function
-        :return:
+        This function uses yfinance to get the wkn's from Yahoo Finance API
+        :return: DataFrame with the wanted wkn's
         """
         df_list = []
         for wkn in self.wkns:
