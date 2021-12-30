@@ -262,8 +262,9 @@ def plot_cut(data=None, label: str = None):
     f1, cut, cutOff_df = cutOff(data, label)
 
     plt.figure(figsize=(14, 8))
-    sns.lineplot(data=data[label], legend='auto', label=label)
-
+    m = sns.lineplot(data=data[label], legend='auto', label='Returns')
+    m.set_xlabel("step")
+    m.set_ylabel("return")
     c = [cut for i in range(1000)]
     c_min = [cut * (-1) for i in range(1000)]
     cut_df = pd.DataFrame(c, columns=['Cut'])
@@ -279,7 +280,7 @@ def plot_confusion_matrix(cm=None):
     """
     Plots the confusion matrix.
     :param cm: confusion_matrix
-    :return:
+    :return: a confusion matrix as plot and png.
     """
     cm_perc = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     cf_matrix = cm
@@ -317,15 +318,17 @@ def plotter(df=None):
     plot_jumps = df[df['Jumps plot'] > 0]
     # plot Time series with jumps
     plt.figure(figsize=(12, 10))
+    # Time-series
     m = sns.lineplot(data=df['Merton Jump'], legend='auto', label='Time-series')
     m.set_xlabel("Step")
     m.set_ylabel("Value")
+    # Jumps
     sns.scatterplot(data=plot_jumps['Merton Jump'], label='Jumps', color='red', alpha=1, s=80)
 
     # IF Diff anomalies
     diff = df.loc[(df['Anomaly Diff IF'] == 1)]
     diff = diff['Merton Jump']
-    # sns.scatterplot(data=diff, label='IF Diff', color='orange', alpha=.6, marker="v", s=110)
+    sns.scatterplot(data=diff, label='IF Diff', color='orange', alpha=.6, marker="v", s=110)
 
     # RSV IF points
     rsv = df.loc[(df['Anomaly RSV IF'] == 1)]
@@ -335,7 +338,7 @@ def plotter(df=None):
     # CutOff RSV anomalies
     cut = df.loc[(df['CutOff RSV']) == 1]
     cut = cut['Merton Jump']
-    sns.scatterplot(data=cut, label='CutOff RSV', color='orange', alpha=0.9, marker="x", s=100)
+    #sns.scatterplot(data=cut, label='CutOff RSV', color='orange', alpha=0.9, marker="x", s=100)
     plt.savefig('../../Pictures/Testdata/MarkedJumps_Testdata.png')
 
     # Returns log

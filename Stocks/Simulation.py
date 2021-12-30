@@ -4,7 +4,7 @@ import time
 from Stocks.StocksLoader import *
 from Stocks.BuilderStock import acc_score, build_stock
 
-def stock_simulation(labels: [str] = None, predict: int = 90)->pd.DataFrame:
+def stock_simulation(labels:[str]=None, predict:int=90)->pd.DataFrame:
     """
     This function runs a simulation of stocks for different contaminations of the isolation forest.
     :param labels: wkn's of the wanted Stocks

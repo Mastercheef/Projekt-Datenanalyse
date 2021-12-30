@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score
 warnings.simplefilter(action='ignore', category=SettingWithCopyWarning)
 
 
-def build_stock(stockDf, N=5, contamin=0.02, tage_pred: int = 90) -> pd.DataFrame:
+def build_stock(stockDf, N=5, contamin=0.02, tage_pred:int=90)->pd.DataFrame:
     """
     This method calculates the features returns, realized variance, realized bipower variation,
     difference, positive and negative returns and signed jumps of a given DataFrame. Then for each features the

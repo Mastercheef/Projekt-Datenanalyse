@@ -5,12 +5,12 @@ import pandas as pd
 sns.set_style('darkgrid')
 
 
-def plot_signed_anomaly(df: pd.DataFrame = None, label: str = None):
+def plot_signed_anomaly(df:pd.DataFrame=None, label:str=None):
     """
-    This method plots the signed anomalies from a given DataFrame
+    This method plots the signed anomalies (if at least two methods work) from a given DataFrame.
     :param df: data to plot
-    :param label:
-    :return:
+    :param label: stock name [String]
+    :return: The stock chart wiht signed jumps as a plot and png
     """
     data = pd.DataFrame()
     data['Anomalie'] = \
