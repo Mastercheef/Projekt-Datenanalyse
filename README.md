@@ -14,7 +14,7 @@ ___
 
 ## Table of contents
 * [General info](#general-info)
-* [Aim of the project](#aim of the project)
+* [Aim of the project](#aim-of-the-project)
 * [Technologies](#technologies)
 * [Setup](#setup)
 * [Result](#result)
