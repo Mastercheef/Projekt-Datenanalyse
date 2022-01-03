@@ -14,6 +14,7 @@ ___
 
 ## Table of contents
 * [General info](#general-info)
+* [Aim of the project](#Aim of the project)
 * [Technologies](#technologies)
 * [Setup](#setup)
 * [Result](#result)
@@ -34,6 +35,13 @@ While the master thesis uses several algorithms such as Robust Random Cut Forest
 The results of the examined thesis can be partially confirmed. This states that the results of the Isolation Forest get better when features are used, whereas when three features are used, the results get worse. The results of this work show that all features deliver relatively similar result. However, it shows that feature extraction is worthwhile, especially since anomalies are rarely detected without using a feature.
 While the CutOff in the master thesis was always worse than the Isolation Forest, this was better in the analysis of this work.
 However, this has no effect on the analysis of the real data, as it does not contain any signed jumps, which are necessary for calculating a CutOff.
+
+
+## Aim of the project
+The aim of his work is to verify the usability of the Isolation Forest for anomaly detection in finance market data. The analysis of test data and the comparison of the results provide a verified model that is suitable for use on real data. 
+In the financial market analysis, significant increases or decreases in the price fluctuations of both, the stock chart and the features charts, should be recognized.
+
+
 
 ## Technologies
 Project created with:
@@ -59,4 +67,12 @@ To test the performance of these two algorithms, the F1-Score of each will be co
 In the next step, the Isolation Forest and cutoff method will be applied to real financial data obtained through the Yahoo Finance API.
 
 ## Result
-It was possible to generate data that follows a Merton jump diffusion process. The features could be extracted and the Isolation Forest and cutoff method could be applied to the features to detect anomalies. The F1-Score, of the Isolation Forest in the original master thesis could be reproduced, but the resulting CutOff F1-Score was higher than in the original master thesis. 
+The artificial test data from the master’s thesis could be reproduced. However, since a Merton-jump process depends on several parameters, the time series could not be reproduced with exactly the same fluctuations. 
+
+As a result, the CutOff in the own experiment was always better, than the Isolation Forest, which was exactly the opposite in the master’s thesis. No CutOff can be calculated for real data, so this difference has no influence on further analyzes.
+It could be confirmed that the Isolation Forrest works best with the Return feature but can be partially improved with the Diff or RSV feature. 
+
+In both cases, a combination of three features works the worst.
+While the F1-scores of the master’s thesis fluctuated with different jump rates, the F1-scores of the own work rose continuously with the increasing jump rate.
+When analyzing real data, it could be shown that distinctive points were found in the feature charts. This shows that the Isolation Forest works in a similar way to the master thesis and that the experiment worked. 
+
