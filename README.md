@@ -2,7 +2,7 @@
 
 ### <center> Anomaly Detection in Financial Market Data
 ####  <center>  using Isolation Forest and Features
-
+___
 &nbsp;
 
 **Authors:** &nbsp;Erik Autenrieth, Pierre Zimmermann &nbsp;
