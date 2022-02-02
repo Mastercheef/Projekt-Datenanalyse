@@ -1,16 +1,14 @@
 # Data Analysis Project (H-BRS)
-___
 
 ### <center> Anomaly Detection in Financial Market Data
 ####  <center>  using Isolation Forest and Features
-___
 
 &nbsp;
 
 **Authors:** &nbsp;Erik Autenrieth, Pierre Zimmermann &nbsp;
 
 **Date:** &nbsp;&nbsp;&nbsp;&nbsp;  20.12.2021
-___
+
 
 ## Table of contents
 * [General info](#general-info)
