@@ -55,21 +55,13 @@ def build_stock(stockDf, N=5, contamin=0.02, tage_pred:int=90)->pd.DataFrame:
     stockDf['Prediction'] = np.where(stockDf["Close"].shift(-tage_pred) > stockDf["Close"], 1, 0)
 
     # IF and features
-    stockDf['Anomaly Close'] = isolationForest(stockDf[['Close']],
-                                               contamin=contamin)
-    stockDf['Anomaly pct Return'] = isolationForest(stockDf[['Return']],
-                                                    contamin=contamin)
-    stockDf['Anomaly Returns IF'] = isolationForest(stockDf[['Return log']],
-                                                    contamin=contamin)
-    stockDf['Anomaly RSV IF'] = isolationForest(stockDf[['RSV']],
-                                                contamin=contamin)
-    stockDf['Anomaly Diff IF'] = isolationForest(stockDf[['Diff']],
-                                                 contamin=contamin)
-    stockDf['Amomaly RSV Diff'] = isolationForest(stockDf[['RSV', 'Diff']], contamin=contamin,
-                                                  max_features=2)
-    stockDf['Amomaly Returns RSV Diff'] = isolationForest(stockDf[['Return log', 'RSV', 'Diff']],
-                                                          contamin=contamin,
-                                                          max_features=3)
+    stockDf['Anomaly Close'] = isolationForest(stockDf[['Close']], contamin=contamin)
+    stockDf['Anomaly pct Return'] = isolationForest(stockDf[['Return']], contamin=contamin)
+    stockDf['Anomaly Returns IF'] = isolationForest(stockDf[['Return log']], contamin=contamin)
+    stockDf['Anomaly RSV IF'] = isolationForest(stockDf[['RSV']], contamin=contamin)
+    stockDf['Anomaly Diff IF'] = isolationForest(stockDf[['Diff']], contamin=contamin)
+    stockDf['Amomaly RSV Diff'] = isolationForest(stockDf[['RSV', 'Diff']], contamin=contamin, max_features=2)
+    stockDf['Amomaly Returns RSV Diff'] = isolationForest(stockDf[['Return log', 'RSV', 'Diff']],contamin=contamin, max_features=3)
 
     return stockDf
 
